@@ -1,0 +1,46 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /
+
+spring:
+  application:
+    name: lastcup-api
+
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASS}
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+        show_sql: true
+    open-in-view: false
+
+# ? ?? OAuth ??
+app:
+  oauth:
+    google:
+      client-ids: ${GOOGLE_CLIENT_IDS:${GOOGLE_CLIENT_ID}}
+    kakao:
+      app-id: ${KAKAO_APP_ID}
+
+
+# JWT
+jwt:
+  issuer: ${JWT_ISSUER:lastcup}
+  secret: ${JWT_SECRET_KEY}
+  access-token-validity: 3600000      # 1??
+  refresh-token-validity: 1209600000  # 14?
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    groups-order: DESC
+    operations-sorter: method
