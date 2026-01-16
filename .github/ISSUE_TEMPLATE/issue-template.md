@@ -1,6 +1,6 @@
 ---
 name: Issue Template
-about: ISSUE
+about: 이슈 생성시 사용하는 템플릿입니다.
 title: ''
 labels: ''
 assignees: ''
