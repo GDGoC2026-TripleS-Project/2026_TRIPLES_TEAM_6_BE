@@ -21,10 +21,6 @@ public class SwaggerConfig {
     public OpenAPI openApi() {
         Components components = new Components()
                 .addSecuritySchemes("BearerAuth", bearerAuthScheme());
-
-        Map<String, Schema> schemas = ModelConverters.getInstance().read(ApiResponseError.class);
-        schemas.forEach(components::addSchemas);
-
         return new OpenAPI()
                 .components(components);
     }
@@ -32,6 +28,14 @@ public class SwaggerConfig {
     @Bean
     public OpenApiCustomizer apiResponseCustomizer() {
         return openApi -> {
+            Components components = openApi.getComponents();
+            if (components == null) {
+                components = new Components();
+                openApi.setComponents(components);
+            }
+            Map<String, Schema> schemas = ModelConverters.getInstance().read(ApiResponseError.class);
+            schemas.forEach(components::addSchemas);
+
             if (openApi.getPaths() == null) {
                 return;
             }
