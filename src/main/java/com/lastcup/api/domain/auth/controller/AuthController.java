@@ -1,14 +1,14 @@
 package com.lastcup.api.domain.auth.controller;
 
+import com.lastcup.api.domain.auth.dto.request.LoginRequest;
+import com.lastcup.api.domain.auth.dto.request.SignupRequest;
 import com.lastcup.api.domain.auth.dto.request.SocialLoginRequest;
-import com.lastcup.api.domain.auth.dto.response.ApiResponse;
-import com.lastcup.api.domain.auth.dto.response.AuthResponse;
-import com.lastcup.api.domain.auth.dto.response.AuthTokensResponse;
+import com.lastcup.api.domain.auth.dto.response.*;
 import com.lastcup.api.domain.auth.service.AuthService;
 import com.lastcup.api.domain.auth.service.SocialLoginService;
 import com.lastcup.api.infrastructure.oauth.SocialProvider;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement; // 추가됨
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -27,6 +27,35 @@ public class AuthController {
     public AuthController(SocialLoginService socialLoginService, AuthService authService) {
         this.socialLoginService = socialLoginService;
         this.authService = authService;
+    }
+
+    @Operation(summary = "아이디 중복 확인", description = "loginId 사용 가능 여부를 반환합니다.")
+    @GetMapping("/check-login-id")
+    public ApiResponse<AvailabilityResponse> checkLoginId(@RequestParam String loginId) {
+        boolean isAvailable = authService.findLoginIdAvailability(loginId);
+        return ApiResponse.of(new AvailabilityResponse(isAvailable));
+    }
+
+    @Operation(summary = "닉네임 중복 확인", description = "nickname 사용 가능 여부를 반환합니다.")
+    @GetMapping("/check-nickname")
+    public ApiResponse<AvailabilityResponse> checkNickname(@RequestParam String nickname) {
+        boolean isAvailable = authService.findNicknameAvailability(nickname);
+        return ApiResponse.of(new AvailabilityResponse(isAvailable));
+    }
+
+    @Operation(summary = "로컬 회원가입", description = "아이디/비밀번호 기반으로 가입하고 JWT(access/refresh)를 발급합니다.")
+    @PostMapping("/signup")
+    @ResponseStatus(HttpStatus.CREATED)
+    public ApiResponse<AuthResultResponse> signup(@RequestBody @Valid SignupRequest request) {
+        AuthResultResponse response = authService.createSignup(request);
+        return ApiResponse.of(response);
+    }
+
+    @Operation(summary = "로컬 로그인", description = "아이디/비밀번호를 검증하고 JWT(access/refresh)를 발급합니다.")
+    @PostMapping("/login")
+    public ApiResponse<AuthResultResponse> login(@RequestBody @Valid LoginRequest request) {
+        AuthResultResponse response = authService.createLogin(request);
+        return ApiResponse.of(response);
     }
 
     @Operation(summary = "소셜 로그인", description = "providerAccessToken을 검증하고, 서비스 JWT(access/refresh)를 발급합니다.")
@@ -58,7 +87,6 @@ public class AuthController {
         return ApiResponse.of(true);
     }
 
-    // 헤더에서 Bearer 토큰 추출 헬퍼 메서드
     private String resolveToken(HttpServletRequest request) {
         String header = request.getHeader(HttpHeaders.AUTHORIZATION);
         if (header != null && header.startsWith("Bearer ")) {

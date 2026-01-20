@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -14,10 +15,31 @@ import java.util.List;
 
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
+    private static final AntPathMatcher PATH_MATCHER = new AntPathMatcher();
+
     private final JwtProvider jwtProvider;
 
     public JwtAuthenticationFilter(JwtProvider jwtProvider) {
         this.jwtProvider = jwtProvider;
+    }
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String uri = request.getRequestURI();
+
+        if (PATH_MATCHER.match("/api/v1/auth/**", uri)) {
+            return true;
+        }
+        if (PATH_MATCHER.match("/swagger-ui/**", uri)) {
+            return true;
+        }
+        if (PATH_MATCHER.match("/v3/api-docs/**", uri)) {
+            return true;
+        }
+        if (PATH_MATCHER.match("/api-docs/**", uri)) {
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -53,15 +75,4 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
         return header.substring(7);
     }
-
-    @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) {
-        String path = request.getRequestURI();
-
-        return path.startsWith("/api/v1/auth/")
-                || path.startsWith("/swagger-ui/")
-                || path.startsWith("/v3/api-docs")
-                || path.startsWith("/api-docs");
-    }
-
 }
