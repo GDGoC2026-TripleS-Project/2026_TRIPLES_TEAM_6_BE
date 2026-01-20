@@ -21,7 +21,7 @@ spring:
         show_sql: true
     open-in-view: false
 
-# ? ?? OAuth ??
+# 소셜 OAuth 설정
 app:
   oauth:
     google:
@@ -29,13 +29,12 @@ app:
     kakao:
       app-id: ${KAKAO_APP_ID}
 
-
 # JWT
 jwt:
   issuer: ${JWT_ISSUER:lastcup}
   secret: ${JWT_SECRET_KEY}
-  access-token-validity: 3600000      # 1??
-  refresh-token-validity: 1209600000  # 14?
+  access-token-validity: 3600000      # 1시간
+  refresh-token-validity: 1209600000  # 14일
 
 springdoc:
   api-docs:
@@ -44,3 +43,10 @@ springdoc:
     path: /swagger-ui.html
     groups-order: DESC
     operations-sorter: method
+
+# AWS S3
+aws:
+  region: ${AWS_REGION:ap-northeast-2}
+  s3:
+    bucket: ${AWS_S3_BUCKET}
+    public-base-url: ${AWS_S3_PUBLIC_BASE_URL:}

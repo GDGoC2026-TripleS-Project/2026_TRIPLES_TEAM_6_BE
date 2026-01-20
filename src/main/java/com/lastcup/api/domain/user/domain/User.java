@@ -44,6 +44,10 @@ public class User extends BaseTimeEntity {
         this.nickname = nickname;
     }
 
+    public void delete() {
+        this.status = UserStatus.DELETED;
+    }
+
     private static void validateNickname(String nickname) {
         if (nickname == null || nickname.isBlank()) {
             throw new IllegalArgumentException("nickname is blank");
