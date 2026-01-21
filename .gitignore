@@ -35,3 +35,11 @@ out/
 
 ### VS Code ###
 .vscode/
+
+# environment files
+.env
+
+### k8s
+k8s/_local/
+*.plain.yaml
+*.plain.yml
