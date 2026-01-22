@@ -1,5 +1,6 @@
 package com.lastcup.api.security;
 
+import com.lastcup.api.global.error.JwtErrorCode;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -58,15 +59,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             FilterChain filterChain
     ) throws ServletException, IOException {
         String token = resolveBearerToken(request);
-        if (token != null) {
-            authenticate(token);
+        if (token == null) {
+            filterChain.doFilter(request, response);
+            return;
         }
-        filterChain.doFilter(request, response);
+        try {
+            authenticate(token);
+            filterChain.doFilter(request, response);
+        } catch (JwtValidationException ex) {
+            request.setAttribute("authErrorCode", ex.getErrorCode());
+            throw new JwtAuthenticationException(ex.getErrorCode(), ex);
+        }
     }
 
     private void authenticate(String token) {
         jwtProvider.validate(token, "ACCESS");
-        AuthUser authUser = jwtProvider.parse(token);
+        AuthUser authUser = jwtProvider.parseAccessToken(token);
 
         UsernamePasswordAuthenticationToken authentication =
                 new UsernamePasswordAuthenticationToken(authUser, null, List.of());
@@ -80,6 +88,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return null;
         }
         if (!header.startsWith("Bearer ")) {
+            request.setAttribute("authErrorCode", JwtErrorCode.JWT_TOKEN_MISSING);
             return null;
         }
         return header.substring(7);

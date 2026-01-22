@@ -1,6 +1,6 @@
 package com.lastcup.api.domain.user.controller;
 
-import com.lastcup.api.domain.auth.dto.response.ApiResponse;
+import com.lastcup.api.global.response.ApiResponse;
 import com.lastcup.api.domain.user.dto.response.BrandFavoriteResponse;
 import com.lastcup.api.domain.user.dto.response.BrandUnfavoriteResponse;
 import com.lastcup.api.domain.user.service.BrandFavoriteService;
@@ -30,7 +30,7 @@ public class BrandFavoriteController {
             @PathVariable Long brandId
     ) {
         brandFavoriteService.createBrandFavorite(authUser.userId(), brandId);
-        return ApiResponse.of(BrandFavoriteResponse.success());
+        return ApiResponse.success(BrandFavoriteResponse.success());
     }
 
     @Operation(summary = "브랜드 즐겨찾기 취소", description = "해당 브랜드를 즐겨찾기에서 삭제합니다.")
@@ -41,6 +41,6 @@ public class BrandFavoriteController {
             @PathVariable Long brandId
     ) {
         brandFavoriteService.deleteBrandFavorite(authUser.userId(), brandId);
-        return ApiResponse.of(BrandUnfavoriteResponse.success());
+        return ApiResponse.success(BrandUnfavoriteResponse.success());
     }
 }

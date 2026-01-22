@@ -1,6 +1,5 @@
 package com.lastcup.api.domain.menu.service;
 
-import com.lastcup.api.domain.brand.domain.Brand;
 import com.lastcup.api.domain.menu.domain.Menu;
 import com.lastcup.api.domain.menu.domain.MenuCategory;
 import com.lastcup.api.domain.menu.domain.MenuSize;
@@ -11,8 +10,8 @@ import com.lastcup.api.domain.menu.dto.response.MenuListItemResponse;
 import com.lastcup.api.domain.menu.dto.response.MenuSearchResponse;
 import com.lastcup.api.domain.menu.dto.response.MenuSizeDetailResponse;
 import com.lastcup.api.domain.menu.dto.response.MenuSizeResponse;
-import com.lastcup.api.domain.menu.dto.response.NutritionResponse;
 import com.lastcup.api.domain.menu.dto.response.PageResponse;
+import com.lastcup.api.domain.menu.mapper.MenuMapper;
 import com.lastcup.api.domain.brand.repository.BrandRepository;
 import com.lastcup.api.domain.menu.repository.MenuRepository;
 import com.lastcup.api.domain.menu.repository.MenuSizeRepository;
@@ -34,17 +33,20 @@ public class MenuService {
     private final MenuRepository menuRepository;
     private final MenuTemperatureRepository menuTemperatureRepository;
     private final MenuSizeRepository menuSizeRepository;
+    private final MenuMapper menuMapper;
 
     public MenuService(
             BrandRepository brandRepository,
             MenuRepository menuRepository,
             MenuTemperatureRepository menuTemperatureRepository,
-            MenuSizeRepository menuSizeRepository
+            MenuSizeRepository menuSizeRepository,
+            MenuMapper menuMapper
     ) {
         this.brandRepository = brandRepository;
         this.menuRepository = menuRepository;
         this.menuTemperatureRepository = menuTemperatureRepository;
         this.menuSizeRepository = menuSizeRepository;
+        this.menuMapper = menuMapper;
     }
 
     public PageResponse<MenuListItemResponse> findBrandMenus(
@@ -60,7 +62,7 @@ public class MenuService {
         Page<Menu> result = findMenusByFilters(brandId, category, keyword, pageable);
 
         List<MenuListItemResponse> content = result.getContent().stream()
-                .map(this::toMenuListItem)
+                .map(menuMapper::toMenuListItem)
                 .collect(Collectors.toList());
 
         return new PageResponse<>(content, result.getNumber(), result.hasNext());
@@ -72,7 +74,7 @@ public class MenuService {
                 .findByNameContainingIgnoreCaseAndIsActiveTrue(keyword, pageable);
 
         List<MenuSearchResponse> content = result.getContent().stream()
-                .map(this::toMenuSearch)
+                .map(menuMapper::toMenuSearch)
                 .collect(Collectors.toList());
 
         return new PageResponse<>(content, result.getNumber(), result.hasNext());
@@ -108,7 +110,7 @@ public class MenuService {
 
         return menuSizeRepository.findByMenuTemperatureIdOrderByIdAsc(menuTemperature.getId())
                 .stream()
-                .map(this::toMenuSize)
+                .map(menuMapper::toMenuSize)
                 .toList();
     }
 
@@ -126,7 +128,7 @@ public class MenuService {
                 menuSize.getMenuTemperature().getTemperature(),
                 menuSize.getSizeName(),
                 menuSize.getVolumeMl(),
-                toNutrition(menuSize)
+                menuMapper.toMenuSize(menuSize).nutrition()
         );
     }
 
@@ -161,27 +163,5 @@ public class MenuService {
 
     private boolean isBlank(String value) {
         return value == null || value.isBlank();
-    }
-
-    private MenuListItemResponse toMenuListItem(Menu menu) {
-        return new MenuListItemResponse(menu.getId(), menu.getName(), menu.getCategory(), menu.getImageUrl());
-    }
-
-    private MenuSearchResponse toMenuSearch(Menu menu) {
-        Brand brand = menu.getBrand();
-        return new MenuSearchResponse(menu.getId(), brand.getName(), menu.getName(), menu.getImageUrl());
-    }
-
-    private MenuSizeResponse toMenuSize(MenuSize menuSize) {
-        return new MenuSizeResponse(
-                menuSize.getId(),
-                menuSize.getSizeName(),
-                menuSize.getVolumeMl(),
-                toNutrition(menuSize)
-        );
-    }
-
-    private NutritionResponse toNutrition(MenuSize menuSize) {
-        return NutritionResponse.from(menuSize.getNutrition());
     }
 }
