@@ -62,7 +62,7 @@ public class AuthController {
         return ApiResponse.success(response);
     }
 
-    @Operation(summary = "소셜 로그인", description = "GOOGLE은 ID Token, KAKAO는 인가 코드를 받아 JWT(access/refresh)를 발급합니다.")
+    @Operation(summary = "소셜 로그인", description = "GOOGLE은 ID Token, KAKAO/APPLE은 인가 코드를 받아 JWT(access/refresh)를 발급합니다.")
     @PostMapping("/social/{provider}/login")
     @ResponseStatus(HttpStatus.OK)
     public ApiResponse<AuthResponse> socialLogin(
