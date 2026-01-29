@@ -9,6 +9,7 @@ import com.lastcup.api.domain.user.domain.User;
 import com.lastcup.api.domain.user.repository.SocialAuthRepository;
 import com.lastcup.api.domain.user.repository.UserRepository;
 import com.lastcup.api.infrastructure.oauth.KakaoClient;
+import com.lastcup.api.infrastructure.oauth.AppleClient;
 import com.lastcup.api.infrastructure.oauth.OAuthTokenVerifier;
 import com.lastcup.api.infrastructure.oauth.SocialProvider;
 import com.lastcup.api.infrastructure.oauth.VerifiedOAuthUser;
@@ -22,6 +23,7 @@ public class SocialLoginService {
 
     private final List<OAuthTokenVerifier> verifiers;
     private final KakaoClient kakaoClient;
+    private final AppleClient appleClient;
     private final UserRepository userRepository;
     private final SocialAuthRepository socialAuthRepository;
     private final NicknameGenerator nicknameGenerator;
@@ -30,6 +32,7 @@ public class SocialLoginService {
     public SocialLoginService(
             List<OAuthTokenVerifier> verifiers,
             KakaoClient kakaoClient,
+            AppleClient appleClient,
             UserRepository userRepository,
             SocialAuthRepository socialAuthRepository,
             NicknameGenerator nicknameGenerator,
@@ -37,6 +40,7 @@ public class SocialLoginService {
     ) {
         this.verifiers = verifiers;
         this.kakaoClient = kakaoClient;
+        this.appleClient = appleClient;
         this.userRepository = userRepository;
         this.socialAuthRepository = socialAuthRepository;
         this.nicknameGenerator = nicknameGenerator;
@@ -52,6 +56,12 @@ public class SocialLoginService {
     private VerifiedOAuthUser verifyWithProvider(SocialProvider provider, SocialLoginRequest request) {
         if (provider == SocialProvider.KAKAO) {
             return kakaoClient.verifyAuthorizationCode(extractAuthorizationCode(request));
+        }
+        if (provider == SocialProvider.APPLE) {
+            return appleClient.verifyAuthorizationCode(
+                    extractAuthorizationCode(request),
+                    request.identityToken()
+            );
         }
         return findVerifier(provider).verify(extractProviderAccessToken(request));
     }

@@ -1,6 +1,6 @@
 package com.lastcup.api.domain.brand.controller;
 
-import com.lastcup.api.domain.auth.dto.response.ApiResponse;
+import com.lastcup.api.global.response.ApiResponse;
 import com.lastcup.api.domain.brand.dto.response.BrandResponse;
 import com.lastcup.api.domain.brand.service.BrandService;
 import com.lastcup.api.security.AuthUser;
@@ -37,7 +37,7 @@ public class BrandController {
             @RequestParam(required = false) String keyword
     ) {
         Long userId = getUserIdOrNull(authUser);
-        return ApiResponse.of(brandService.findBrands(keyword, userId));
+        return ApiResponse.success(brandService.findBrands(keyword, userId));
     }
 
     private Long getUserIdOrNull(AuthUser authUser) {

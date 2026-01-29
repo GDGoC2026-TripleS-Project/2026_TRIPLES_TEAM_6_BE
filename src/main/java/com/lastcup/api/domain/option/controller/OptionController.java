@@ -1,6 +1,6 @@
 package com.lastcup.api.domain.option.controller;
 
-import com.lastcup.api.domain.auth.dto.response.ApiResponse;
+import com.lastcup.api.global.response.ApiResponse;
 import com.lastcup.api.domain.option.domain.Option;
 import com.lastcup.api.domain.option.domain.OptionCategory;
 import com.lastcup.api.domain.option.dto.response.OptionResponse;
@@ -38,6 +38,6 @@ public class OptionController {
                 .map(OptionResponse::from)
                 .toList();
 
-        return ApiResponse.of(response);
+        return ApiResponse.success(response);
     }
 }

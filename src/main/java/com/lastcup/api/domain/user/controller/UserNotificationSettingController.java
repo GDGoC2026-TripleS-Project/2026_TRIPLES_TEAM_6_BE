@@ -1,6 +1,6 @@
 package com.lastcup.api.domain.user.controller;
 
-import com.lastcup.api.domain.auth.dto.response.ApiResponse;
+import com.lastcup.api.global.response.ApiResponse;
 import com.lastcup.api.domain.user.dto.request.UpdateNotificationSettingRequest;
 import com.lastcup.api.domain.user.dto.response.NotificationSettingResponse;
 import com.lastcup.api.domain.user.dto.response.UpdateNotificationSettingResponse;
@@ -28,7 +28,7 @@ public class UserNotificationSettingController {
     @GetMapping
     public ApiResponse<NotificationSettingResponse> findSettings(@AuthenticationPrincipal AuthUser authUser) {
         NotificationSettingResponse response = settingService.findOrCreate(authUser.userId());
-        return ApiResponse.of(response);
+        return ApiResponse.success(response);
     }
 
     @Operation(summary = "알림 설정 변경", description = "부분 수정이 가능하며, 설정이 없으면 기본값 생성 후 수정합니다.")
@@ -44,6 +44,6 @@ public class UserNotificationSettingController {
                 request.recordRemindAt(),
                 request.dailyCloseAt()
         );
-        return ApiResponse.of(response);
+        return ApiResponse.success(response);
     }
 }
