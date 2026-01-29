@@ -1,6 +1,6 @@
 package com.lastcup.api.domain.menu.controller;
 
-import com.lastcup.api.domain.auth.dto.response.ApiResponse;
+import com.lastcup.api.global.response.ApiResponse;
 import com.lastcup.api.domain.menu.domain.MenuCategory;
 import com.lastcup.api.domain.menu.domain.TemperatureType;
 import com.lastcup.api.domain.menu.dto.response.MenuDetailResponse;
@@ -45,7 +45,7 @@ public class MenuController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size
     ) {
-        return ApiResponse.of(menuService.findBrandMenus(brandId, category, keyword, page, size));
+        return ApiResponse.success(menuService.findBrandMenus(brandId, category, keyword, page, size));
     }
 
     @Operation(
@@ -59,7 +59,7 @@ public class MenuController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size
     ) {
-        return ApiResponse.of(menuService.searchMenus(keyword, page, size));
+        return ApiResponse.success(menuService.searchMenus(keyword, page, size));
     }
 
     @Operation(
@@ -69,7 +69,7 @@ public class MenuController {
     @SecurityRequirement(name = "BearerAuth")
     @GetMapping("/menus/{menuId}")
     public ApiResponse<MenuDetailResponse> findMenuDetail(@PathVariable Long menuId) {
-        return ApiResponse.of(menuService.findMenuDetail(menuId));
+        return ApiResponse.success(menuService.findMenuDetail(menuId));
     }
 
     @Operation(
@@ -83,7 +83,7 @@ public class MenuController {
             @Parameter(description = "온도", example = "HOT")
             @RequestParam TemperatureType temperature
     ) {
-        return ApiResponse.of(menuService.findMenuSizes(menuId, temperature));
+        return ApiResponse.success(menuService.findMenuSizes(menuId, temperature));
     }
 
     @Operation(
@@ -93,6 +93,6 @@ public class MenuController {
     @SecurityRequirement(name = "BearerAuth")
     @GetMapping("/menus/sizes/{menuSizeId}")
     public ApiResponse<MenuSizeDetailResponse> findMenuSizeDetail(@PathVariable Long menuSizeId) {
-        return ApiResponse.of(menuService.findMenuSizeDetail(menuSizeId));
+        return ApiResponse.success(menuService.findMenuSizeDetail(menuSizeId));
     }
 }

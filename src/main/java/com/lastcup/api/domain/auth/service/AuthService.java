@@ -83,7 +83,7 @@ public class AuthService {
     public AuthTokensResponse refresh(String refreshToken) {
         jwtProvider.validate(refreshToken, "REFRESH");
 
-        AuthUser authUser = jwtProvider.parse(refreshToken);
+        AuthUser authUser = jwtProvider.parseRefreshToken(refreshToken);
 
         return tokenService.createTokens(authUser.userId());
     }
