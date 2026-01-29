@@ -1,6 +1,6 @@
 package com.lastcup.api.domain.user.controller;
 
-import com.lastcup.api.domain.auth.dto.response.ApiResponse;
+import com.lastcup.api.global.response.ApiResponse;
 import com.lastcup.api.domain.user.dto.request.RegisterDeviceRequest;
 import com.lastcup.api.domain.user.dto.response.RegisterDeviceResponse;
 import com.lastcup.api.domain.user.service.UserDeviceService;
@@ -35,6 +35,6 @@ public class UserDeviceController {
                 request.fcmToken(),
                 request.platform()
         );
-        return ApiResponse.of(response);
+        return ApiResponse.success(response);
     }
 }

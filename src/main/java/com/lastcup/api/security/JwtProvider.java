@@ -1,5 +1,6 @@
 package com.lastcup.api.security;
 
+import com.lastcup.api.global.error.JwtErrorCode;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -40,16 +41,22 @@ public class JwtProvider {
     }
 
     public void validate(String token, String requiredType) {
-        Claims claims = parseClaims(token);
+        Claims claims = parseClaims(token, requiredType);
         String type = claims.get("type", String.class);
         if (requiredType.equals(type)) {
             return;
         }
-        throw new JwtValidationException("JWT_TYPE_MISMATCH");
+        throw new JwtValidationException(JwtErrorCode.JWT_TOKEN_TYPE_MISMATCH);
     }
 
-    public AuthUser parse(String token) {
-        Claims claims = parseClaims(token);
+    public AuthUser parseAccessToken(String token) {
+        Claims claims = parseClaims(token, "ACCESS");
+        Long userId = claims.get("userId", Long.class);
+        return new AuthUser(userId);
+    }
+
+    public AuthUser parseRefreshToken(String token) {
+        Claims claims = parseClaims(token, "REFRESH");
         Long userId = claims.get("userId", Long.class);
         return new AuthUser(userId);
     }
@@ -68,7 +75,7 @@ public class JwtProvider {
                 .compact();
     }
 
-    private Claims parseClaims(String token) {
+    private Claims parseClaims(String token, String tokenType) {
         try {
             return Jwts.parser()
                     .verifyWith(key)
@@ -76,7 +83,14 @@ public class JwtProvider {
                     .parseSignedClaims(token)
                     .getPayload();
         } catch (Exception e) {
-            throw new JwtValidationException("JWT_INVALID");
+            throw new JwtValidationException(resolveInvalidTokenCode(tokenType));
         }
+    }
+
+    private JwtErrorCode resolveInvalidTokenCode(String tokenType) {
+        if ("REFRESH".equals(tokenType)) {
+            return JwtErrorCode.JWT_REFRESH_INVALID;
+        }
+        return JwtErrorCode.JWT_ACCESS_INVALID;
     }
 }

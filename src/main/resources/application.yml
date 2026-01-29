@@ -32,6 +32,14 @@ app:
       redirect-uri: ${KAKAO_REDIRECT_URI:}
       token-url: ${KAKAO_TOKEN_URL:https://kauth.kakao.com/oauth/token}
       user-info-url: ${KAKAO_USER_INFO_URL:https://kapi.kakao.com/v2/user/me?secure_resource=true}
+    apple:
+      client-id: ${APPLE_CLIENT_ID:}
+      team-id: ${APPLE_TEAM_ID:}
+      key-id: ${APPLE_KEY_ID:}
+      private-key: ${APPLE_PRIVATE_KEY:}
+      redirect-uri: ${APPLE_REDIRECT_URI:}
+      token-url: ${APPLE_TOKEN_URL:https://appleid.apple.com/auth/token}
+      key-url: ${APPLE_KEY_URL:https://appleid.apple.com/auth/keys}
 
 # JWT
 jwt:
