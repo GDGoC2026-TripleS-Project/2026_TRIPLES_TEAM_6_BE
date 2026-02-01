@@ -42,7 +42,11 @@ app:
       redirect-uri: ${APPLE_REDIRECT_URI:}
       token-url: ${APPLE_TOKEN_URL:https://appleid.apple.com/auth/token}
       key-url: ${APPLE_KEY_URL:https://appleid.apple.com/auth/keys}
-
+    swagger:
+      server-url: ${SWAGGER_SERVER_URL:https://api.lastcup.site}
+      server-description: ${SWAGGER_SERVER_DESCRIPTION:API Server}
+      local-server-url: ${SWAGGER_LOCAL_SERVER_URL:http://localhost:8080}
+      local-server-description: ${SWAGGER_LOCAL_SERVER_DESCRIPTION:Local Server}
 # JWT
 jwt:
   issuer: ${JWT_ISSUER:lastcup}
