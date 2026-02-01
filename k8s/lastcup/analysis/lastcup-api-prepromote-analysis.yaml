@@ -1,0 +1,17 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: lastcup-api-prepromote
+  namespace: lastcup
+spec:
+  metrics:
+    - name: preview-actuator-health
+      interval: 10s
+      count: 6
+      failureLimit: 2
+      provider:
+        web:
+          url: "http://lastcup-api-preview/actuator/health"
+          timeoutSeconds: 5
+          jsonPath: "{$.status}"
+      successCondition: result == "UP"
