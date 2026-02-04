@@ -1,0 +1,11 @@
+resources:
+  - secrets/01-namespace.yaml
+  - secrets/02-services.yaml
+  - secrets/03-rollout.yaml
+  - secrets/04-ingress.yaml
+  - analysis/lastcup-api-prepromote-analysis.yaml
+  - sealed-secrets/05-sealed-secret.yaml
+
+images:
+  - name: ghcr.io/gdgoc2026-triples-project/2026_triples_team_6_be
+    newTag: latest
