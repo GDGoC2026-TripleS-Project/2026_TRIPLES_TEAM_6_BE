@@ -1,5 +1,7 @@
 package com.lastcup.api.infrastructure.storage;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
@@ -7,11 +9,12 @@ import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
-import java.io.IOException;
 import java.util.UUID;
 
 @Component
 public class S3Client {
+
+    private static final Logger log = LoggerFactory.getLogger(S3Client.class);
 
     private final software.amazon.awssdk.services.s3.S3Client client;
     private final String bucket;
@@ -30,6 +33,7 @@ public class S3Client {
     }
 
     public UploadResult upload(String directory, MultipartFile file) {
+        validateBucket();
         String key = createKey(directory, file.getOriginalFilename());
         putObject(key, file);
         return new UploadResult(key, publicBaseUrl + "/" + key, fileSize(file));
@@ -70,7 +74,13 @@ public class S3Client {
                     .contentType(file.getContentType())
                     .build();
             client.putObject(request, RequestBody.fromBytes(file.getBytes()));
-        } catch (IOException e) {
+        } catch (Exception e) {
+            log.error("S3 upload failed: bucket={}, key={}, size={}, contentType={}",
+                    bucket,
+                    key,
+                    fileSize(file),
+                    file != null ? file.getContentType() : null,
+                    e);
             throw new IllegalStateException("s3 upload failed", e);
         }
     }
@@ -80,6 +90,12 @@ public class S3Client {
             return 0;
         }
         return file.getSize();
+    }
+
+    private void validateBucket() {
+        if (bucket == null || bucket.isBlank()) {
+            throw new IllegalStateException("s3 upload failed");
+        }
     }
 
     private String buildBaseUrl(String region, String bucket, String configuredBaseUrl) {
