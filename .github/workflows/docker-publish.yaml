@@ -6,17 +6,20 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   packages: write
 
 jobs:
   build-and-push:
+    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      # GHCR는 이미지 경로가 소문자여야 안전함(조직/레포 대문자 이슈 방지)
+      # GHCR는 이미지 경로가 소문자여야 안전함
       - name: Set image repo (lowercase)
         shell: bash
         run: |
@@ -48,3 +51,21 @@ jobs:
           push: true
           tags: |
             ${{ env.IMAGE_REPO }}:latest
+
+      - name: Install yq
+        run: |
+          sudo wget -q https://github.com/mikefarah/yq/releases/download/v4.44.1/yq_linux_amd64 -O /usr/local/bin/yq
+          sudo chmod +x /usr/local/bin/yq
+          yq --version
+
+      - name: Update rollout image tag
+        run: |
+          yq -i '.spec.template.spec.containers[0].image = env(IMAGE_REPO) + ":" + env(IMAGE_TAG)' k8s/lastcup/secrets/03-rollout.yaml
+
+      - name: Commit and push manifest
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add k8s/lastcup/secrets/03-rollout.yaml
+          git commit -m "chore: deploy $IMAGE_TAG"
+          git push
