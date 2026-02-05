@@ -6,6 +6,7 @@ import com.lastcup.api.domain.auth.dto.response.AuthTokensResponse;
 import com.lastcup.api.domain.auth.dto.response.UserSummaryResponse;
 import com.lastcup.api.domain.user.domain.SocialAuth;
 import com.lastcup.api.domain.user.domain.User;
+import com.lastcup.api.domain.user.domain.UserStatus;
 import com.lastcup.api.domain.user.repository.SocialAuthRepository;
 import com.lastcup.api.domain.user.repository.UserRepository;
 import com.lastcup.api.infrastructure.oauth.KakaoClient;
@@ -91,6 +92,7 @@ public class SocialLoginService {
     private AuthResponse loginExistingUser(SocialAuth socialAuth) {
         User user = userRepository.findById(socialAuth.getUserId())
                 .orElseThrow(() -> new IllegalStateException("user not found"));
+        validateUserStatus(user);
 
         AuthTokensResponse tokens = tokenService.createTokens(user.getId());
         return new AuthResponse(new UserSummaryResponse(user.getId(), user.getNickname()), tokens, false);
@@ -124,5 +126,12 @@ public class SocialLoginService {
                 .filter(v -> v.getProvider() == provider)
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("unsupported provider"));
+    }
+
+    private void validateUserStatus(User user) {
+        if (user.getStatus() == UserStatus.ACTIVE) {
+            return;
+        }
+        throw new IllegalArgumentException("user is not active");
     }
 }

@@ -6,6 +6,8 @@ import com.lastcup.api.infrastructure.oauth.OAuthVerificationException;
 import com.lastcup.api.security.JwtValidationException;
 import java.util.List;
 import java.util.Objects;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -18,6 +20,8 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResponse<Void>> handleValidation(MethodArgumentNotValidException ex) {
@@ -74,6 +78,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleException(Exception ex) {
+        log.error("Unhandled exception", ex);
         return buildResponse(CommonErrorCode.COMMON_INTERNAL_ERROR);
     }
 
@@ -108,6 +113,7 @@ public class GlobalExceptionHandler {
             case "authorizationCode is required" -> AuthErrorCode.AUTH_AUTHORIZATION_CODE_REQUIRED;
             case "Bearer Token is missing" -> JwtErrorCode.JWT_TOKEN_MISSING;
             case "user not found" -> UserErrorCode.USER_NOT_FOUND;
+            case "user goal not found" -> CommonErrorCode.COMMON_NOT_FOUND;
             case "file is empty" -> UserErrorCode.USER_PROFILE_IMAGE_REQUIRED;
             case "file is not image" -> StorageErrorCode.STORAGE_INVALID_CONTENT_TYPE;
             default -> resolveCommonBadRequest(message);

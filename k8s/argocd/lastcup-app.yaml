@@ -15,6 +15,9 @@ spec:
     repoURL: https://github.com/GDGoC2026-TripleS-Project/2026_TRIPLES_TEAM_6_BE.git
     targetRevision: main
     path: k8s/lastcup
+    kustomize:
+      images:
+        - ghcr.io/gdgoc2026-triples-project/2026_triples_team_6_be:latest
   destination:
     server: https://kubernetes.default.svc
     namespace: lastcup
