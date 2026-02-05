@@ -23,6 +23,10 @@ public class Option extends BaseTimeEntity {
     @Column(nullable = false, length = 20)
     private OptionCategory category;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private OptionSelectionType selectionType;
+
     @Column(nullable = false)
     private int caffeineMg;
 
@@ -47,6 +51,7 @@ public class Option extends BaseTimeEntity {
             Long brandId,
             String name,
             OptionCategory category,
+            OptionSelectionType selectionType,
             int caffeineMg,
             int sugarG,
             Integer calories,
@@ -59,6 +64,7 @@ public class Option extends BaseTimeEntity {
         this.brandId = brandId;
         this.name = name;
         this.category = category;
+        this.selectionType = selectionType;
         this.caffeineMg = caffeineMg;
         this.sugarG = sugarG;
         this.calories = calories;
@@ -73,6 +79,7 @@ public class Option extends BaseTimeEntity {
             Long brandId,
             String name,
             OptionCategory category,
+            OptionSelectionType selectionType,
             int caffeineMg,
             int sugarG,
             Integer calories,
@@ -85,11 +92,13 @@ public class Option extends BaseTimeEntity {
         validateBrandId(brandId);
         validateName(name);
         validateCategory(category);
+        validateSelectionType(selectionType);
 
         return new Option(
                 brandId,
                 name,
                 category,
+                selectionType,
                 caffeineMg,
                 sugarG,
                 calories,
@@ -119,6 +128,12 @@ public class Option extends BaseTimeEntity {
         }
     }
 
+    private static void validateSelectionType(OptionSelectionType selectionType) {
+        if (selectionType == null) {
+            throw new IllegalArgumentException("selectionType is null");
+        }
+    }
+
     public Long getId() {return id;}
 
     public Long getBrandId() {return brandId;}
@@ -126,6 +141,8 @@ public class Option extends BaseTimeEntity {
     public String getName() {return name;}
 
     public OptionCategory getCategory() {return category;}
+
+    public OptionSelectionType getSelectionType() {return selectionType;}
 
     public int getCaffeineMg() {return caffeineMg;}
 

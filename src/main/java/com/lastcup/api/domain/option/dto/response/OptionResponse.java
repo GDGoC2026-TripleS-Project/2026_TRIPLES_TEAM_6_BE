@@ -2,6 +2,7 @@ package com.lastcup.api.domain.option.dto.response;
 
 import com.lastcup.api.domain.option.domain.Option;
 import com.lastcup.api.domain.option.domain.OptionCategory;
+import com.lastcup.api.domain.option.domain.OptionSelectionType;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.math.BigDecimal;
@@ -15,6 +16,9 @@ public record OptionResponse(
 
         @Schema(description = "옵션 카테고리", example = "SYRUP")
         OptionCategory category,
+
+        @Schema(description = "옵션 선택 방식", example = "COUNT")
+        OptionSelectionType selectionType,
 
         @Schema(description = "1회 추가당 카페인(mg)", example = "0")
         int caffeineMg,
@@ -45,6 +49,7 @@ public record OptionResponse(
                 option.getId(),
                 option.getName(),
                 option.getCategory(),
+                option.getSelectionType(),
                 option.getCaffeineMg(),
                 option.getSugarG(),
                 option.getCalories(),
