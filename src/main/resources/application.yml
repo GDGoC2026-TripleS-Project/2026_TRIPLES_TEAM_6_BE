@@ -64,7 +64,7 @@ app:
       local-server-url: ${SWAGGER_LOCAL_SERVER_URL:http://localhost:8080}
       local-server-description: ${SWAGGER_LOCAL_SERVER_DESCRIPTION:Local Server}
   password-reset:
-    base-url: ${PASSWORD_RESET_BASE_URL:https://api.lastcup.site/reset-password}
+    base-url: ${PASSWORD_RESET_BASE_URL:lastcup://password-reset}
     token-ttl-minutes: ${PASSWORD_RESET_TTL_MINUTES:30}
     from-address: ${PASSWORD_RESET_FROM:${MAIL_USERNAME}}
 # JWT
