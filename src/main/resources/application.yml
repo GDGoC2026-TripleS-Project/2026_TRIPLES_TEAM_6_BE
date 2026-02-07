@@ -9,6 +9,11 @@ spring:
   application:
     name: lastcup-api
 
+  servlet:
+    multipart:
+      max-file-size: 25MB
+      max-request-size: 25MB
+
   datasource:
     url: ${DB_URL}
     username: ${DB_USER}
@@ -89,7 +94,6 @@ management:
     health:
       probes:
         enabled: true
-
   health:
     mail:
       enabled: false
