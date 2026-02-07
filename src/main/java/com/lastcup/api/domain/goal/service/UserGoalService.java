@@ -3,17 +3,17 @@ package com.lastcup.api.domain.goal.service;
 import com.lastcup.api.domain.goal.domain.UserGoal;
 import com.lastcup.api.domain.goal.repository.UserGoalRepository;
 import java.time.LocalDate;
+import java.util.Optional;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.util.Optional;
 
 @Service
 @Transactional
 public class UserGoalService {
 
-    private static final int DEFAULT_DAILY_CAFFEINE_TARGET = 400;
-    private static final int DEFAULT_DAILY_SUGAR_TARGET = 25;
+    public static final int DEFAULT_DAILY_CAFFEINE_TARGET = 400;
+    public static final int DEFAULT_DAILY_SUGAR_TARGET = 25;
 
     private final UserGoalRepository userGoalRepository;
 
@@ -36,6 +36,12 @@ public class UserGoalService {
 
     public UserGoal findOrCreateCurrent(Long userId) {
         return findByDate(userId, LocalDate.now());
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<UserGoal> findOptionalByDate(Long userId, LocalDate date) {
+        LocalDate targetDate = date != null ? date : LocalDate.now();
+        return findFirstActiveByDate(userId, targetDate);
     }
 
     public UserGoal updateGoal(
