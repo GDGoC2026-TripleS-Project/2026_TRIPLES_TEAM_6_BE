@@ -25,7 +25,7 @@ public enum OAuthErrorCode implements ErrorCode {
     OAUTH_APPLE_JWK_FETCH_FAILED("OAUTH_APPLE_JWK_FETCH_FAILED", "애플 공개키 조회에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     OAUTH_APPLE_JWK_NOT_FOUND("OAUTH_APPLE_JWK_NOT_FOUND", "애플 공개키가 일치하지 않습니다.", HttpStatus.UNAUTHORIZED),
     OAUTH_APPLE_JWK_TYPE_INVALID("OAUTH_APPLE_JWK_TYPE_INVALID", "애플 공개키 유형이 올바르지 않습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
-    OAUTH_APPLE_ID_TOKEN_SUB_MISMATCH("OAUTH_APPLE_ID_TOKEN_SUB_MISMATCH", "애플 ID 토큰 정보가 일치하지 않습니다.", HttpStatus.UNAUTHORIZED);;
+    OAUTH_APPLE_ID_TOKEN_SUB_MISMATCH("OAUTH_APPLE_ID_TOKEN_SUB_MISMATCH", "애플 ID 토큰 정보가 일치하지 않습니다.", HttpStatus.UNAUTHORIZED);
 
     private final String code;
     private final String message;
