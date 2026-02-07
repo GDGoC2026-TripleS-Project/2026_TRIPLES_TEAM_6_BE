@@ -2,6 +2,8 @@ package com.lastcup.api.infrastructure.oauth;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -10,6 +12,8 @@ import org.springframework.web.client.RestClient;
 
 @Component
 public class KakaoClient implements OAuthTokenVerifier {
+
+    private static final Logger log = LoggerFactory.getLogger(KakaoClient.class);
 
     private final RestClient restClient = RestClient.builder().build();
     private final String userInfoUrl;
@@ -45,6 +49,7 @@ public class KakaoClient implements OAuthTokenVerifier {
                     null
             );
         } catch (Exception e) {
+            log.error("카카오 사용자 정보 조회 실패: {}", e.getMessage(), e);
             throw new OAuthVerificationException("KAKAO_USER_INFO_FETCH_FAILED");
         }
     }
