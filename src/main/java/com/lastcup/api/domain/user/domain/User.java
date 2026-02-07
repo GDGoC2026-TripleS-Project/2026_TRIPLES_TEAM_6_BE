@@ -14,7 +14,7 @@ public class User extends BaseTimeEntity {
     @Column(nullable = false, length = 50)
     private String nickname;
 
-    @Column(nullable = false, unique = true, length = 100)
+    @Column(unique = true, length = 100)
     private String email;
 
     @Column(length = 500)
@@ -36,7 +36,6 @@ public class User extends BaseTimeEntity {
 
     public static User create(String nickname, String email, String profileImageUrl) {
         validateNickname(nickname);
-        validateEmail(email);
         return new User(nickname, email, profileImageUrl);
     }
 
@@ -49,6 +48,19 @@ public class User extends BaseTimeEntity {
         this.nickname = nickname;
     }
 
+    /**
+     * 이메일이 아직 없는 경우에만 업데이트한다.
+     * Apple 로그인은 최초 1회만 이메일을 제공하므로,
+     * 첫 가입 시 누락됐다가 이후 클라이언트가 전달하면 보충한다.
+     */
+    public boolean updateEmailIfAbsent(String email) {
+        if (this.email != null || email == null || email.isBlank()) {
+            return false;
+        }
+        this.email = email;
+        return true;
+    }
+
     public void delete() {
         this.status = UserStatus.DELETED;
     }
@@ -59,11 +71,8 @@ public class User extends BaseTimeEntity {
         }
     }
 
-    private static void validateEmail(String email) {
-        if (email == null || email.isBlank()) {
-            throw new IllegalArgumentException("email is blank");
-        }
-    }
+    // email은 소셜 로그인 사용자의 경우 null일 수 있음 (카카오 등)
+    // 로컬 회원가입은 SignupRequest DTO에서 @NotBlank @Email로 검증
 
     public Long getId() {
         return id;

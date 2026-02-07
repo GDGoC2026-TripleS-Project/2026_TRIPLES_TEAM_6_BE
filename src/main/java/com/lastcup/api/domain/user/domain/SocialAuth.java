@@ -77,4 +77,16 @@ public class SocialAuth extends BaseTimeEntity {
     public String getEmail() {
         return email;
     }
+
+    /**
+     * 이메일이 아직 없는 경우에만 업데이트한다.
+     * Apple 최초 가입 실패 후 재시도 시 이메일을 보충하기 위함.
+     */
+    public boolean updateEmailIfAbsent(String email) {
+        if (this.email != null || email == null || email.isBlank()) {
+            return false;
+        }
+        this.email = email;
+        return true;
+    }
 }
