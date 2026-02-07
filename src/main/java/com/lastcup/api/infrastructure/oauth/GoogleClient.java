@@ -7,11 +7,16 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Arrays;
 import java.util.List;
 
 @Component
 public class GoogleClient implements OAuthTokenVerifier {
+
+    private static final Logger log = LoggerFactory.getLogger(GoogleClient.class);
 
     private final GoogleIdTokenVerifier verifier;
 
@@ -44,7 +49,10 @@ public class GoogleClient implements OAuthTokenVerifier {
             if (idToken != null) {
                 return idToken;
             }
-        } catch (Exception ignored) {
+            log.warn("Google ID Token 검증 실패: verifier.verify()가 null 반환. 토큰 앞 20자: {}",
+                    token.length() > 20 ? token.substring(0, 20) + "..." : token);
+        } catch (Exception e) {
+            log.error("Google ID Token 검증 중 예외 발생: {}", e.getMessage(), e);
         }
         throw new OAuthVerificationException("GOOGLE_ID_TOKEN_INVALID");
     }
