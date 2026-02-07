@@ -132,6 +132,9 @@ public class Intake extends BaseTimeEntity {
         if (intakeDate == null) {
             throw new IllegalArgumentException("intakeDate is null");
         }
+        if (intakeDate.isAfter(LocalDate.now())) {
+            throw new IllegalArgumentException("intakeDate cannot be in the future");
+        }
     }
 
     private static void validateMenuSizeId(Long menuSizeId) {
