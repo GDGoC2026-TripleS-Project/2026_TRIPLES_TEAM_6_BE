@@ -52,13 +52,13 @@ app:
     kakao:
       user-info-url: ${KAKAO_USER_INFO_URL:https://kapi.kakao.com/v2/user/me?secure_resource=true}
     apple:
-      client-id: ${APPLE_CLIENT_ID:}
+      client-id: ${APPLE_CLIENT_ID}
       key-url: ${APPLE_KEY_URL:https://appleid.apple.com/auth/keys}
-    swagger:
-      server-url: ${SWAGGER_SERVER_URL:https://api.lastcup.site}
-      server-description: ${SWAGGER_SERVER_DESCRIPTION:API Server}
-      local-server-url: ${SWAGGER_LOCAL_SERVER_URL:http://localhost:8080}
-      local-server-description: ${SWAGGER_LOCAL_SERVER_DESCRIPTION:Local Server}
+  swagger:
+    server-url: ${SWAGGER_SERVER_URL:https://api.lastcup.site}
+    server-description: ${SWAGGER_SERVER_DESCRIPTION:API Server}
+    local-server-url: ${SWAGGER_LOCAL_SERVER_URL:http://localhost:8080}
+    local-server-description: ${SWAGGER_LOCAL_SERVER_DESCRIPTION:Local Server}
   password-reset:
     base-url: ${PASSWORD_RESET_BASE_URL:lastcup://password-reset}
     token-ttl-minutes: ${PASSWORD_RESET_TTL_MINUTES:30}
