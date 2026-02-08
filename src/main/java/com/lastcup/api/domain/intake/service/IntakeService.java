@@ -138,13 +138,16 @@ public class IntakeService {
 
     @Transactional(readOnly = true)
     public IntakeDetailResponse findIntakeDetail(Long userId, Long intakeId) {
-        Intake intake = intakeRepository.findByIdAndUserId(intakeId, userId)
-                .orElseThrow(() -> new IllegalArgumentException("Intake not found: " + intakeId));
+        Intake intake = findIntakeByIdAndUserId(intakeId, userId);
 
         Map<Long, MenuSize> menuSizeMap = fetchMenuSizeMap(List.of(intake));
         Map<Long, String> optionNameMap = fetchOptionNameMap(List.of(intake));
 
         MenuSize menuSize = menuSizeMap.get(intake.getMenuSizeId());
+
+        // 수정 플로우용 ID (프론트엔드가 기존 선택 화면을 복원하는 데 사용)
+        Long brandId = null;
+        Long menuId = null;
         String brandName = "";
         String menuName = "";
         String temperature = "";
@@ -153,6 +156,8 @@ public class IntakeService {
         if (menuSize != null) {
             MenuTemperature mt = menuSize.getMenuTemperature();
             Menu menu = mt.getMenu();
+            brandId = menu.getBrand().getId();
+            menuId = menu.getId();
             brandName = menu.getBrand().getName();
             menuName = menu.getName();
             temperature = mt.getTemperature().name();
@@ -164,6 +169,7 @@ public class IntakeService {
         return new IntakeDetailResponse(
                 intake.getId(),
                 intake.getIntakeDate(),
+                brandId, menuId, intake.getMenuSizeId(),
                 brandName, menuName, temperature, sizeName,
                 intake.getQuantity(),
                 intake.getCaffeineSnapshot(),
@@ -179,7 +185,14 @@ public class IntakeService {
         );
     }
 
-    // ── 생성 관련 private 메서드 ──
+    // ── 공통 조회 ──
+
+    private Intake findIntakeByIdAndUserId(Long intakeId, Long userId) {
+        return intakeRepository.findByIdAndUserId(intakeId, userId)
+                .orElseThrow(() -> new IllegalArgumentException("Intake not found: " + intakeId));
+    }
+
+    // ── 생성·수정 관련 private 메서드 ──
 
     private MenuSize findMenuSizeWithNutrition(Long menuSizeId) {
         return menuSizeRepository.findDetailById(menuSizeId)

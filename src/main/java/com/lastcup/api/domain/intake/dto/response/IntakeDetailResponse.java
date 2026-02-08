@@ -14,6 +14,16 @@ public record IntakeDetailResponse(
         @Schema(description = "섭취 날짜", example = "2026-01-26")
         LocalDate intakeDate,
 
+        // ── 수정 플로우에서 프론트엔드가 기존 선택 화면을 복원하는 데 필요한 ID ──
+        @Schema(description = "브랜드 ID (음료 리스트·옵션 목록 조회용)", example = "1")
+        Long brandId,
+
+        @Schema(description = "메뉴 ID (메뉴 상세·사이즈 목록 조회용)", example = "10")
+        Long menuId,
+
+        @Schema(description = "메뉴 사이즈 ID (수정 요청 시 전송용)", example = "42")
+        Long menuSizeId,
+
         @Schema(description = "브랜드명", example = "이디야")
         String brandName,
 
