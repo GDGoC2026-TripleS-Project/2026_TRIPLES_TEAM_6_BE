@@ -104,11 +104,11 @@ public class IntakeController {
     @Operation(summary = "섭취 기록 삭제", description = "특정 섭취 기록을 삭제합니다.")
     @SecurityRequirement(name = "BearerAuth")
     @DeleteMapping("/{intakeId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteIntake(
+    public ApiResponse<Void> deleteIntake(
             @AuthenticationPrincipal AuthUser authUser,
             @PathVariable Long intakeId
     ) {
         intakeService.deleteIntake(authUser.userId(), intakeId);
+        return ApiResponse.success(null);
     }
 }
