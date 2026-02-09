@@ -11,6 +11,8 @@ import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Date;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 @Component
 public class JwtProvider {
@@ -59,6 +61,16 @@ public class JwtProvider {
         Claims claims = parseClaims(token, "REFRESH");
         Long userId = claims.get("userId", Long.class);
         return new AuthUser(userId);
+    }
+
+    public LocalDateTime getAccessTokenExpiresAt(String token) {
+        Claims claims = parseClaims(token, "ACCESS");
+        return LocalDateTime.ofInstant(claims.getExpiration().toInstant(), ZoneId.systemDefault());
+    }
+
+    public LocalDateTime getRefreshTokenExpiresAt(String token) {
+        Claims claims = parseClaims(token, "REFRESH");
+        return LocalDateTime.ofInstant(claims.getExpiration().toInstant(), ZoneId.systemDefault());
     }
 
     private String createToken(Long userId, long ttlMs, String type) {

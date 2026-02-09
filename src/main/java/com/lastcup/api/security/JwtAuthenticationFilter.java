@@ -1,5 +1,6 @@
 package com.lastcup.api.security;
 
+import com.lastcup.api.domain.auth.service.AccessTokenBlacklistService;
 import com.lastcup.api.global.error.JwtErrorCode;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -19,9 +20,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private static final AntPathMatcher PATH_MATCHER = new AntPathMatcher();
 
     private final JwtProvider jwtProvider;
+    private final AccessTokenBlacklistService accessTokenBlacklistService;
 
-    public JwtAuthenticationFilter(JwtProvider jwtProvider) {
+    public JwtAuthenticationFilter(
+            JwtProvider jwtProvider,
+            AccessTokenBlacklistService accessTokenBlacklistService
+    ) {
         this.jwtProvider = jwtProvider;
+        this.accessTokenBlacklistService = accessTokenBlacklistService;
     }
 
     @Override

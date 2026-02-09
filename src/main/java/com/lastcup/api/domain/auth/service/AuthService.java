@@ -11,8 +11,10 @@ import com.lastcup.api.domain.user.domain.UserStatus;
 import com.lastcup.api.domain.user.repository.LocalAuthRepository;
 import com.lastcup.api.domain.user.repository.UserRepository;
 import com.lastcup.api.domain.user.service.UserNotificationSettingService;
+import com.lastcup.api.global.error.JwtErrorCode;
 import com.lastcup.api.security.AuthUser;
 import com.lastcup.api.security.JwtProvider;
+import com.lastcup.api.security.JwtValidationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +24,8 @@ public class AuthService {
 
     private final JwtProvider jwtProvider;
     private final TokenService tokenService;
+    private final AccessTokenBlacklistService accessTokenBlacklistService;
+    private final RefreshTokenBlacklistService refreshTokenBlacklistService;
     private final UserRepository userRepository;
     private final LocalAuthRepository localAuthRepository;
     private final PasswordEncoder passwordEncoder;
@@ -30,6 +34,8 @@ public class AuthService {
     public AuthService(
             JwtProvider jwtProvider,
             TokenService tokenService,
+            AccessTokenBlacklistService accessTokenBlacklistService,
+            RefreshTokenBlacklistService refreshTokenBlacklistService,
             UserRepository userRepository,
             LocalAuthRepository localAuthRepository,
             PasswordEncoder passwordEncoder,
@@ -37,6 +43,8 @@ public class AuthService {
     ) {
         this.jwtProvider = jwtProvider;
         this.tokenService = tokenService;
+        this.accessTokenBlacklistService = accessTokenBlacklistService;
+        this.refreshTokenBlacklistService = refreshTokenBlacklistService;
         this.userRepository = userRepository;
         this.localAuthRepository = localAuthRepository;
         this.passwordEncoder = passwordEncoder;
@@ -87,15 +95,20 @@ public class AuthService {
 
     public AuthTokensResponse refresh(String refreshToken) {
         jwtProvider.validate(refreshToken, "REFRESH");
+        if (refreshTokenBlacklistService.isBlacklisted(refreshToken)) {
+            throw new JwtValidationException(JwtErrorCode.JWT_REFRESH_INVALID);
+        }
 
         AuthUser authUser = jwtProvider.parseRefreshToken(refreshToken);
 
         return tokenService.createTokens(authUser.userId());
     }
 
-    public void logout(String refreshToken) {
+    public void logout(String accessToken, String refreshToken) {
+        jwtProvider.validate(accessToken, "ACCESS");
         jwtProvider.validate(refreshToken, "REFRESH");
-        // 검증만 성공하면 로그아웃
+        accessTokenBlacklistService.blacklist(accessToken);
+        refreshTokenBlacklistService.blacklist(refreshToken);
     }
 
     private void validateSignup(SignupRequest request) {
