@@ -1,0 +1,120 @@
+package com.lastcup.api.domain.notification.service;
+
+import com.lastcup.api.domain.notification.domain.NotificationDispatchLog;
+import com.lastcup.api.domain.notification.domain.NotificationType;
+import com.lastcup.api.domain.notification.repository.NotificationDispatchLogRepository;
+import com.lastcup.api.domain.user.domain.UserDevice;
+import com.lastcup.api.domain.user.domain.UserNotificationSetting;
+import com.lastcup.api.domain.user.repository.UserDeviceRepository;
+import com.lastcup.api.domain.user.repository.UserNotificationSettingRepository;
+import com.lastcup.api.infrastructure.notification.FcmNotificationService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Component
+public class UserNotificationScheduler {
+
+    private static final Logger log = LoggerFactory.getLogger(UserNotificationScheduler.class);
+    private static final ZoneId KST = ZoneId.of("Asia/Seoul");
+
+    private static final String RECORD_TITLE = "기록 알림";
+    private static final String RECORD_BODY = "오늘의 기록을 남겨보세요.";
+
+    private static final String DAILY_CLOSE_TITLE = "마감 알림";
+    private static final String DAILY_CLOSE_BODY = "오늘의 섭취를 마감해 주세요.";
+
+    private final UserNotificationSettingRepository settingRepository;
+    private final UserDeviceRepository deviceRepository;
+    private final NotificationDispatchLogRepository dispatchLogRepository;
+    private final FcmNotificationService fcmNotificationService;
+
+    public UserNotificationScheduler(
+            UserNotificationSettingRepository settingRepository,
+            UserDeviceRepository deviceRepository,
+            NotificationDispatchLogRepository dispatchLogRepository,
+            FcmNotificationService fcmNotificationService
+    ) {
+        this.settingRepository = settingRepository;
+        this.deviceRepository = deviceRepository;
+        this.dispatchLogRepository = dispatchLogRepository;
+        this.fcmNotificationService = fcmNotificationService;
+    }
+
+    @Scheduled(cron = "0 * * * * *", zone = "Asia/Seoul")
+    public void sendScheduledNotifications() {
+        LocalTime now = LocalTime.now(KST).withSecond(0).withNano(0);
+        sendRecordRemind(now);
+        sendDailyClose(now);
+    }
+
+    private void sendRecordRemind(LocalTime now) {
+        List<UserNotificationSetting> settings =
+                settingRepository.findAllByIsEnabledTrueAndRecordRemindAt(now);
+        processSettings(settings, NotificationType.RECORD_REMIND, RECORD_TITLE, RECORD_BODY);
+    }
+
+    private void sendDailyClose(LocalTime now) {
+        List<UserNotificationSetting> settings =
+                settingRepository.findAllByIsEnabledTrueAndDailyCloseAt(now);
+        processSettings(settings, NotificationType.DAILY_CLOSE, DAILY_CLOSE_TITLE, DAILY_CLOSE_BODY);
+    }
+
+    private void processSettings(
+            List<UserNotificationSetting> settings,
+            NotificationType notificationType,
+            String title,
+            String body
+    ) {
+        for (UserNotificationSetting setting : settings) {
+            Long userId = setting.getUserId();
+            try {
+                sendIfNotSent(userId, notificationType, title, body);
+            } catch (Exception e) {
+                log.error("Notification send failed. userId={}, type={}", userId, notificationType, e);
+            }
+        }
+    }
+
+    private void sendIfNotSent(Long userId, NotificationType notificationType, String title, String body) {
+        LocalDate today = LocalDate.now(KST);
+        if (dispatchLogRepository.existsByUserIdAndNotificationTypeAndSentDate(userId, notificationType, today)) {
+            return;
+        }
+        List<String> tokens = deviceRepository.findAllByUserIdAndIsEnabledTrue(userId).stream()
+                .map(UserDevice::getFcmToken)
+                .filter(token -> token != null && !token.isBlank())
+                .distinct()
+                .collect(Collectors.toList());
+        if (tokens.isEmpty()) {
+            return;
+        }
+        fcmNotificationService.sendToTokens(tokens, title, body);
+        saveDispatchLog(userId, notificationType, today);
+    }
+
+    private void saveDispatchLog(Long userId, NotificationType notificationType, LocalDate today) {
+        try {
+            dispatchLogRepository.save(NotificationDispatchLog.create(
+                    userId,
+                    notificationType,
+                    today,
+                    LocalDateTime.now(KST)
+            ));
+        } catch (DataIntegrityViolationException e) {
+            log.info("Notification dispatch log already exists. userId={}, type={}, date={}",
+                    userId,
+                    notificationType,
+                    today);
+        }
+    }
+}

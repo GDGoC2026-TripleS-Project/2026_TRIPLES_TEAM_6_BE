@@ -80,6 +80,10 @@ public class UserNotificationSetting extends BaseTimeEntity {
         return isEnabled;
     }
 
+    public Long getUserId() {
+        return userId;
+    }
+
     public LocalTime getRecordRemindAt() {
         return recordRemindAt;
     }
