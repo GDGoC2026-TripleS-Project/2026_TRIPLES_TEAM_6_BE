@@ -68,6 +68,8 @@ app:
     base-url: ${PASSWORD_RESET_BASE_URL:lastcup://password-reset}
     token-ttl-minutes: ${PASSWORD_RESET_TTL_MINUTES:30}
     from-address: ${PASSWORD_RESET_FROM:${MAIL_USERNAME}}
+  firebase:
+    admin-key: ${FIREBASE_ADMIN_KEY}
 # JWT
 jwt:
   issuer: ${JWT_ISSUER:lastcup}
