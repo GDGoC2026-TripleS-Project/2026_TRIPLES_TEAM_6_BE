@@ -106,12 +106,13 @@ public class AuthController {
         return ApiResponse.success(true);
     }
 
-    @Operation(summary = "로그아웃", description = "Refresh Token을 검증하고 로그아웃 처리합니다.")
+    @Operation(summary = "로그아웃", description = "Access/Refresh Token을 무효화하여 로그아웃 처리합니다.")
     @SecurityRequirement(name = "BearerAuth")
     @PostMapping("/logout")
     public ApiResponse<Boolean> logout(HttpServletRequest request) {
-        String refreshToken = resolveToken(request);
-        authService.logout(refreshToken);
+        String accessToken = resolveToken(request);
+        String refreshToken = resolveRefreshToken(request);
+        authService.logout(accessToken, refreshToken);
         return ApiResponse.success(true);
     }
 
@@ -121,5 +122,13 @@ public class AuthController {
             return header.substring(7);
         }
         throw new IllegalArgumentException("Bearer Token is missing");
+    }
+
+    private String resolveRefreshToken(HttpServletRequest request) {
+        String header = request.getHeader("Refresh-Token");
+        if (header != null && !header.isBlank()) {
+            return header;
+        }
+        throw new IllegalArgumentException("Refresh Token is missing");
     }
 }

@@ -25,6 +25,9 @@ public class Option extends BaseTimeEntity {
     @Column(nullable = false, length = 20)
     private OptionSelectionType selectionType;
 
+    @OneToOne(mappedBy = "option", fetch = FetchType.LAZY)
+    private OptionNutrition nutrition;
+
     protected Option() {
     }
 

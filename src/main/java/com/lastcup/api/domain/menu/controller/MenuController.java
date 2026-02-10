@@ -9,7 +9,6 @@ import com.lastcup.api.domain.menu.dto.response.MenuListItemResponse;
 import com.lastcup.api.domain.menu.dto.response.MenuSearchResponse;
 import com.lastcup.api.domain.menu.dto.response.MenuSizeDetailResponse;
 import com.lastcup.api.domain.menu.dto.response.MenuSizeResponse;
-import com.lastcup.api.domain.menu.dto.response.PageResponse;
 import com.lastcup.api.domain.menu.service.MenuService;
 import com.lastcup.api.security.AuthUser;
 import io.swagger.v3.oas.annotations.Operation;
@@ -37,34 +36,31 @@ public class MenuController {
 
     @Operation(
             summary = "특정 브랜드의 메뉴 목록 조회",
-            description = "brandId 범위 내에서 category 1차 필터, keyword 2차 필터. page/size 지원"
+            description = "brandId 범위 내에서 category 1차 필터, keyword 2차 필터."
     )
     @SecurityRequirement(name = "BearerAuth")
     @GetMapping("/brands/{brandId}/menus")
-    public ApiResponse<PageResponse<MenuListItemResponse>> findBrandMenus(
+    public ApiResponse<List<MenuListItemResponse>> findBrandMenus(
             @AuthenticationPrincipal AuthUser authUser,
             @PathVariable Long brandId,
             @RequestParam(required = false) MenuCategory category,
-            @RequestParam(required = false) String keyword,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size
+            @RequestParam(required = false) String keyword
     ) {
-        return ApiResponse.success(menuService.findBrandMenus(brandId, category, keyword, page, size, getUserIdOrNull(authUser)));
+        return ApiResponse.success(menuService.findBrandMenus(brandId, category, keyword, getUserIdOrNull(authUser)));
     }
 
     @Operation(
             summary = "메뉴 전체 검색(브랜드 무관)",
-            description = "keyword로 전체 메뉴 검색. page/size 지원"
+            description = "keyword로 전체 메뉴 검색."
     )
     @SecurityRequirement(name = "BearerAuth")
     @GetMapping("/menus/search")
-    public ApiResponse<PageResponse<MenuSearchResponse>> searchMenus(
+    public ApiResponse<List<MenuSearchResponse>> searchMenus(
             @AuthenticationPrincipal AuthUser authUser,
-            @RequestParam String keyword,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size
+            @RequestParam String keyword
+
     ) {
-        return ApiResponse.success(menuService.searchMenus(keyword, page, size, getUserIdOrNull(authUser)));
+        return ApiResponse.success(menuService.searchMenus(keyword, getUserIdOrNull(authUser)));
     }
 
     @Operation(

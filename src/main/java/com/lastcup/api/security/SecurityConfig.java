@@ -1,6 +1,7 @@
 package com.lastcup.api.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.lastcup.api.domain.auth.service.AccessTokenBlacklistService;
 import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,10 +25,16 @@ public class SecurityConfig {
 
     private final JwtProvider jwtProvider;
     private final ObjectMapper objectMapper;
+    private final AccessTokenBlacklistService accessTokenBlacklistService;
 
-    public SecurityConfig(JwtProvider jwtProvider, ObjectMapper objectMapper) {
+    public SecurityConfig(
+            JwtProvider jwtProvider,
+            ObjectMapper objectMapper,
+            AccessTokenBlacklistService accessTokenBlacklistService
+    ) {
         this.jwtProvider = jwtProvider;
         this.objectMapper = objectMapper;
+        this.accessTokenBlacklistService = accessTokenBlacklistService;
     }
 
     @Bean
@@ -51,7 +58,10 @@ public class SecurityConfig {
                         .authenticationEntryPoint(new ApiAuthenticationEntryPoint(objectMapper))
                         .accessDeniedHandler(new ApiAccessDeniedHandler(objectMapper))
                 )
-                .addFilterBefore(new JwtAuthenticationFilter(jwtProvider), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(
+                        new JwtAuthenticationFilter(jwtProvider, accessTokenBlacklistService),
+                        UsernamePasswordAuthenticationFilter.class
+                )
                 .build();
     }
 

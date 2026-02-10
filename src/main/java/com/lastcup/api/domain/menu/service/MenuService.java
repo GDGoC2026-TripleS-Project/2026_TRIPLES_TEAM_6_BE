@@ -12,7 +12,6 @@ import com.lastcup.api.domain.menu.dto.response.MenuListItemResponse;
 import com.lastcup.api.domain.menu.dto.response.MenuSearchResponse;
 import com.lastcup.api.domain.menu.dto.response.MenuSizeDetailResponse;
 import com.lastcup.api.domain.menu.dto.response.MenuSizeResponse;
-import com.lastcup.api.domain.menu.dto.response.PageResponse;
 import com.lastcup.api.domain.menu.mapper.MenuMapper;
 import com.lastcup.api.domain.menu.repository.MenuRepository;
 import com.lastcup.api.domain.menu.repository.MenuSizeRepository;
@@ -22,9 +21,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -56,21 +52,19 @@ public class MenuService {
         this.menuFavoriteRepository = menuFavoriteRepository;
     }
 
-    public PageResponse<MenuListItemResponse> findBrandMenus(
+    public List<MenuListItemResponse> findBrandMenus(
             Long brandId,
             MenuCategory category,
             String keyword,
-            int page,
-            int size,
             Long userId
     ) {
         validateBrandExists(brandId);
 
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "name"));
-        Page<Menu> result = findMenusByFilters(brandId, category, keyword, pageable);
+        Sort sort = Sort.by(Sort.Direction.ASC, "name");
+        List<Menu> menus = findMenusByFilters(brandId, category, keyword, sort);
         Set<Long> favoriteMenuIds = findFavoriteMenuIds(userId);
 
-        List<MenuListItemResponse> content = result.getContent().stream()
+        List<MenuListItemResponse> result = menus.stream()
                 .map(menu ->
                         menuMapper.toMenuListItem(
                                 menu,
@@ -81,27 +75,25 @@ public class MenuService {
 
         sortByFavoriteThenName(
                 userId,
-                content,
+                result,
                 MenuListItemResponse::isFavorite,
                 MenuListItemResponse::name
         );
 
-        return new PageResponse<>(content, result.getNumber(), result.hasNext());
+        return result;
     }
 
-    public PageResponse<MenuSearchResponse> searchMenus(
+    public List<MenuSearchResponse> searchMenus(
             String keyword,
-            int page,
-            int size,
             Long userId
     ) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "name"));
-        Page<Menu> result =
-                menuRepository.findByNameContainingIgnoreCaseAndIsActiveTrue(keyword, pageable);
+        Sort sort = Sort.by(Sort.Direction.ASC, "name");
+        List<Menu> menus =
+                menuRepository.findByNameContainingIgnoreCaseAndIsActiveTrue(keyword, sort);
 
         Set<Long> favoriteMenuIds = findFavoriteMenuIds(userId);
 
-        List<MenuSearchResponse> content = result.getContent().stream()
+        List<MenuSearchResponse> result = menus.stream()
                 .map(menu ->
                         menuMapper.toMenuSearch(
                                 menu,
@@ -111,7 +103,7 @@ public class MenuService {
                 .collect(Collectors.toList());
 
         if (userId != null) {
-            content = content.stream()
+            result = result.stream()
                     .sorted(
                             Comparator.comparing(MenuSearchResponse::isFavorite).reversed()
                                     .thenComparing(MenuSearchResponse::brandName)
@@ -120,7 +112,7 @@ public class MenuService {
                     .toList();
         }
 
-        return new PageResponse<>(content, result.getNumber(), result.hasNext());
+        return result;
     }
 
     public MenuDetailResponse findMenuDetail(Long menuId) {
@@ -199,25 +191,25 @@ public class MenuService {
         }
     }
 
-    private Page<Menu> findMenusByFilters(
+    private List<Menu> findMenusByFilters(
             Long brandId,
             MenuCategory category,
             String keyword,
-            Pageable pageable
+            Sort sort
     ) {
         if (isBlank(keyword) && category == null) {
-            return menuRepository.findByBrandIdAndIsActiveTrue(brandId, pageable);
+            return menuRepository.findByBrandIdAndIsActiveTrue(brandId, sort);
         }
         if (isBlank(keyword)) {
-            return menuRepository.findByBrandIdAndCategoryAndIsActiveTrue(brandId, category, pageable);
+            return menuRepository.findByBrandIdAndCategoryAndIsActiveTrue(brandId, category, sort);
         }
         if (category == null) {
             return menuRepository.findByBrandIdAndNameContainingIgnoreCaseAndIsActiveTrue(
-                    brandId, keyword, pageable
+                    brandId, keyword, sort
             );
         }
         return menuRepository.findByBrandIdAndCategoryAndNameContainingIgnoreCaseAndIsActiveTrue(
-                brandId, category, keyword, pageable
+                brandId, category, keyword, sort
         );
     }
 
