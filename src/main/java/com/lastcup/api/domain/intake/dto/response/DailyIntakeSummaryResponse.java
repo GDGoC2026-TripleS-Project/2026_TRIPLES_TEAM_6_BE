@@ -16,6 +16,12 @@ public record DailyIntakeSummaryResponse(
         @Schema(description = "총 당류 섭취량(g)", example = "49")
         int totalSugar,
 
+        @Schema(description = "총 에스프레소 환산 잔 수 (75mg = 1잔)", example = "3")
+        int totalEspressoShotCount,
+
+        @Schema(description = "총 각설탕 환산 개수 (3g = 1개)", example = "16")
+        int totalSugarCubeCount,
+
         @Schema(description = "카페인 목표(mg)", example = "400")
         int goalCaffeine,
 

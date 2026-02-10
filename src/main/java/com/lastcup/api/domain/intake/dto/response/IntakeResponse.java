@@ -29,6 +29,12 @@ public record IntakeResponse(
         @Schema(description = "당류 스냅샷(g)", example = "3")
         int sugarSnapshot,
 
+        @Schema(description = "에스프레소 환산 잔 수 (75mg = 1잔)", example = "2")
+        int espressoShotCount,
+
+        @Schema(description = "각설탕 환산 개수 (3g = 1개)", example = "1")
+        int sugarCubeCount,
+
         @Schema(description = "칼로리 스냅샷(kcal)")
         Integer caloriesSnapshot,
 

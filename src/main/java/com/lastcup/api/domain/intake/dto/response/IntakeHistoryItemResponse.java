@@ -32,6 +32,12 @@ public record IntakeHistoryItemResponse(
         @Schema(description = "당류(g)", example = "19")
         int sugarSnapshot,
 
+        @Schema(description = "에스프레소 환산 잔 수 (75mg = 1잔)", example = "2")
+        int espressoShotCount,
+
+        @Schema(description = "각설탕 환산 개수 (3g = 1개)", example = "6")
+        int sugarCubeCount,
+
         @Schema(description = "수량", example = "1")
         int quantity,
 

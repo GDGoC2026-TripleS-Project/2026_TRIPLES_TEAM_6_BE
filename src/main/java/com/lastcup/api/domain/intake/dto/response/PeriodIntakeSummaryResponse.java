@@ -19,6 +19,12 @@ public record PeriodIntakeSummaryResponse(
         @Schema(description = "총 당류 섭취량(g)", example = "932")
         int totalSugar,
 
+        @Schema(description = "총 에스프레소 환산 잔 수 (75mg = 1잔)", example = "17")
+        int totalEspressoShotCount,
+
+        @Schema(description = "총 각설탕 환산 개수 (3g = 1개)", example = "311")
+        int totalSugarCubeCount,
+
         @Schema(description = "총 잔 수", example = "34")
         int intakeCount,
 

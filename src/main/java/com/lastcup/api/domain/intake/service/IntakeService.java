@@ -137,6 +137,8 @@ public class IntakeService {
 
         return new DailyIntakeSummaryResponse(
                 targetDate, totalCaffeine, totalSugar,
+                Intake.toEspressoShotCount(totalCaffeine),
+                Intake.toSugarCubeCount(totalSugar),
                 goalCaffeine, goalSugar, intakeCount, items
         );
     }
@@ -161,7 +163,10 @@ public class IntakeService {
         int intakeCount = intakes.stream().mapToInt(Intake::getQuantity).sum();
 
         return new PeriodIntakeSummaryResponse(
-                startDate, endDate, totalCaffeine, totalSugar, intakeCount, items
+                startDate, endDate, totalCaffeine, totalSugar,
+                Intake.toEspressoShotCount(totalCaffeine),
+                Intake.toSugarCubeCount(totalSugar),
+                intakeCount, items
         );
     }
 
@@ -203,6 +208,8 @@ public class IntakeService {
                 intake.getQuantity(),
                 intake.getCaffeineSnapshot(),
                 intake.getSugarSnapshot(),
+                intake.getEspressoShotCount(),
+                intake.getSugarCubeCount(),
                 intake.getCaloriesSnapshot(),
                 intake.getSodiumSnapshot(),
                 intake.getProteinSnapshot(),
@@ -310,6 +317,8 @@ public class IntakeService {
                 brandName, menuName, temperature, sizeName,
                 intake.getCaffeineSnapshot(),
                 intake.getSugarSnapshot(),
+                intake.getEspressoShotCount(),
+                intake.getSugarCubeCount(),
                 intake.getQuantity(),
                 options,
                 intake.getCreatedAt()
@@ -341,6 +350,8 @@ public class IntakeService {
                 intake.getQuantity(),
                 intake.getCaffeineSnapshot(),
                 intake.getSugarSnapshot(),
+                intake.getEspressoShotCount(),
+                intake.getSugarCubeCount(),
                 intake.getCaloriesSnapshot(),
                 intake.getSodiumSnapshot(),
                 intake.getProteinSnapshot(),
