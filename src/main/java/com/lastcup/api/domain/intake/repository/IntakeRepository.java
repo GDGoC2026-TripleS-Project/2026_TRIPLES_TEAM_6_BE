@@ -34,4 +34,16 @@ public interface IntakeRepository extends JpaRepository<Intake, Long> {
 
     @EntityGraph(attributePaths = {"intakeOptions"})
     Optional<Intake> findByIdAndUserId(Long id, Long userId);
+
+    @Query("""
+            select distinct i.intakeDate from Intake i
+            where i.userId = :userId
+              and i.intakeDate between :startDate and :endDate
+            order by i.intakeDate
+            """)
+    List<LocalDate> findDistinctIntakeDates(
+            @Param("userId") Long userId,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
+    );
 }
