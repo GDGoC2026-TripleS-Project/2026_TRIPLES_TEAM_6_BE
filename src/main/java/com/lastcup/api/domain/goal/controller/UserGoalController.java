@@ -4,6 +4,7 @@ import com.lastcup.api.domain.goal.domain.UserGoal;
 import com.lastcup.api.domain.goal.dto.request.UpdateGoalRequest;
 import com.lastcup.api.domain.goal.dto.response.GoalResponse;
 import com.lastcup.api.domain.goal.service.UserGoalService;
+import com.lastcup.api.domain.intake.domain.Intake;
 import com.lastcup.api.global.response.ApiResponse;
 import com.lastcup.api.security.AuthUser;
 import io.swagger.v3.oas.annotations.Operation;
@@ -63,7 +64,9 @@ public class UserGoalController {
                 goal.getId(),
                 goal.getUserId(),
                 goal.getDailyCaffeineTarget(),
+                Intake.toEspressoShotCount(goal.getDailyCaffeineTarget()),
                 goal.getDailySugarTarget(),
+                Intake.toSugarCubeCount(goal.getDailySugarTarget()),
                 goal.getStartDate(),
                 goal.getEndDate(),
                 goal.getCreatedAt(),
