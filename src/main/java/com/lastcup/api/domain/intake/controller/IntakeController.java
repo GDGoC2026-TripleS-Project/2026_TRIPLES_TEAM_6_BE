@@ -4,9 +4,9 @@ import com.lastcup.api.domain.intake.dto.request.CreateIntakeRequest;
 import com.lastcup.api.domain.intake.dto.request.IntakeUpdateRequest;
 import com.lastcup.api.domain.intake.dto.response.DailyIntakeSummaryResponse;
 import com.lastcup.api.domain.intake.dto.response.IntakeDetailResponse;
+import com.lastcup.api.domain.intake.dto.response.IntakeRecordDatesResponse;
 import com.lastcup.api.domain.intake.dto.response.IntakeResponse;
 import com.lastcup.api.domain.intake.dto.response.PeriodIntakeStatisticsResponse;
-import com.lastcup.api.domain.intake.dto.response.PeriodIntakeSummaryResponse;
 import com.lastcup.api.domain.intake.service.IntakeService;
 import com.lastcup.api.global.response.ApiResponse;
 import com.lastcup.api.security.AuthUser;
@@ -53,7 +53,7 @@ public class IntakeController {
         return ApiResponse.success(response);
     }
 
-    @Operation(summary = "일별 섭취 이력 조회", description = "특정 날짜의 섭취 이력과 요약을 조회합니다. 날짜 미지정 시 오늘 기준으로 조회합니다.")
+    @Operation(summary = "일별 섭취 이력 조회", description = "특정 날짜의 섭취 이력과 요약을 조회합니다. 같은 음료는 종류별로 그룹핑됩니다. 날짜 미지정 시 오늘 기준으로 조회합니다.")
     @SecurityRequirement(name = "BearerAuth")
     @GetMapping("/daily")
     public ApiResponse<DailyIntakeSummaryResponse> findDailyIntakes(
@@ -65,27 +65,13 @@ public class IntakeController {
         return ApiResponse.success(response);
     }
 
-    @Operation(summary = "기간별 섭취 기록 건별 조회", description = "시작~종료 날짜 범위의 개별 섭취 기록 목록과 요약을 조회합니다.")
-    @SecurityRequirement(name = "BearerAuth")
-    @GetMapping("/period")
-    public ApiResponse<PeriodIntakeSummaryResponse> findPeriodIntakes(
-            @AuthenticationPrincipal AuthUser authUser,
-            @Parameter(description = "시작 날짜", example = "2026-02-07")
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @Parameter(description = "종료 날짜", example = "2026-02-22")
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
-    ) {
-        PeriodIntakeSummaryResponse response = intakeService.findPeriodIntakes(authUser.userId(), startDate, endDate);
-        return ApiResponse.success(response);
-    }
-
     @Operation(
-            summary = "기간별 섭취 기록 통합 조회",
+            summary = "기간별 섭취 기록 조회",
             description = "시작~종료 날짜 범위의 총 섭취량 요약과 음료 종류별 그룹 통계를 조회합니다. "
                     + "같은 음료라도 ICE/HOT, 사이즈, 옵션 조합이 다르면 별도로 집계됩니다."
     )
     @SecurityRequirement(name = "BearerAuth")
-    @GetMapping("/period/statistics")
+    @GetMapping("/period")
     public ApiResponse<PeriodIntakeStatisticsResponse> findPeriodIntakeStatistics(
             @AuthenticationPrincipal AuthUser authUser,
             @Parameter(description = "시작 날짜", example = "2026-01-08")
@@ -94,6 +80,22 @@ public class IntakeController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
     ) {
         PeriodIntakeStatisticsResponse response = intakeService.findPeriodIntakeStatistics(
+                authUser.userId(), startDate, endDate
+        );
+        return ApiResponse.success(response);
+    }
+
+    @Operation(summary = "기간 내 섭취 기록 날짜 조회", description = "시작~종료 날짜 범위에서 섭취 기록이 존재하는 날짜 목록을 조회합니다. 캘린더 마커 표시용 경량 API입니다.")
+    @SecurityRequirement(name = "BearerAuth")
+    @GetMapping("/period/dates")
+    public ApiResponse<IntakeRecordDatesResponse> findIntakeDates(
+            @AuthenticationPrincipal AuthUser authUser,
+            @Parameter(description = "시작 날짜", example = "2026-01-01")
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @Parameter(description = "종료 날짜", example = "2026-01-31")
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
+    ) {
+        IntakeRecordDatesResponse response = intakeService.findIntakeDates(
                 authUser.userId(), startDate, endDate
         );
         return ApiResponse.success(response);

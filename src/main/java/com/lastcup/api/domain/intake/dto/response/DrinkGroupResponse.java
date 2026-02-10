@@ -28,6 +28,18 @@ public record DrinkGroupResponse(
         int caffeinePerUnit,
 
         @Schema(description = "1잔당 당류(g)", example = "9")
-        int sugarPerUnit
+        int sugarPerUnit,
+
+        @Schema(description = "그룹 총 카페인(mg)", example = "1600")
+        int totalCaffeine,
+
+        @Schema(description = "그룹 총 당류(g)", example = "180")
+        int totalSugar,
+
+        @Schema(description = "그룹 총 에스프레소 환산 잔 수 (75mg = 1잔)", example = "21")
+        int espressoShotCount,
+
+        @Schema(description = "그룹 총 각설탕 환산 개수 (3g = 1개)", example = "60")
+        int sugarCubeCount
 ) {
 }

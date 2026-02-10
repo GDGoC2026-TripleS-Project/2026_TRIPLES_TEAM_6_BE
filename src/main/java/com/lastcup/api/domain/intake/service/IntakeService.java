@@ -10,12 +10,11 @@ import com.lastcup.api.domain.intake.dto.request.IntakeUpdateRequest;
 import com.lastcup.api.domain.intake.dto.response.DailyIntakeSummaryResponse;
 import com.lastcup.api.domain.intake.dto.response.DrinkGroupResponse;
 import com.lastcup.api.domain.intake.dto.response.IntakeDetailResponse;
-import com.lastcup.api.domain.intake.dto.response.IntakeHistoryItemResponse;
 import com.lastcup.api.domain.intake.dto.response.IntakeOptionDetailResponse;
 import com.lastcup.api.domain.intake.dto.response.IntakeOptionResponse;
+import com.lastcup.api.domain.intake.dto.response.IntakeRecordDatesResponse;
 import com.lastcup.api.domain.intake.dto.response.IntakeResponse;
 import com.lastcup.api.domain.intake.dto.response.PeriodIntakeStatisticsResponse;
-import com.lastcup.api.domain.intake.dto.response.PeriodIntakeSummaryResponse;
 import com.lastcup.api.domain.intake.repository.IntakeRepository;
 import com.lastcup.api.domain.menu.domain.Menu;
 import com.lastcup.api.domain.menu.domain.MenuSize;
@@ -122,16 +121,13 @@ public class IntakeService {
 
         List<Intake> intakes = intakeRepository.findDailyIntakes(userId, targetDate);
 
-        Map<Long, MenuSize> menuSizeMap = fetchMenuSizeMap(intakes);
-        Map<Long, String> optionNameMap = fetchOptionNameMap(intakes);
-
-        List<IntakeHistoryItemResponse> items = intakes.stream()
-                .map(intake -> toHistoryItem(intake, menuSizeMap, optionNameMap))
-                .toList();
-
         int totalCaffeine = intakes.stream().mapToInt(Intake::getCaffeineSnapshot).sum();
         int totalSugar = intakes.stream().mapToInt(Intake::getSugarSnapshot).sum();
         int intakeCount = intakes.stream().mapToInt(Intake::getQuantity).sum();
+
+        Map<Long, MenuSize> menuSizeMap = fetchMenuSizeMap(intakes);
+        Map<Long, String> optionNameMap = fetchOptionNameMap(intakes);
+        List<DrinkGroupResponse> drinkGroups = buildDrinkGroups(intakes, menuSizeMap, optionNameMap);
 
         Optional<UserGoal> goalOpt = userGoalService.findOptionalByDate(userId, targetDate);
         int goalCaffeine = goalOpt.map(UserGoal::getDailyCaffeineTarget)
@@ -143,35 +139,22 @@ public class IntakeService {
                 targetDate, totalCaffeine, totalSugar,
                 Intake.toEspressoShotCount(totalCaffeine),
                 Intake.toSugarCubeCount(totalSugar),
-                goalCaffeine, goalSugar, intakeCount, items
+                goalCaffeine, goalSugar, intakeCount, drinkGroups
         );
     }
 
+    /**
+     * 기간 내 섭취 기록이 존재하는 날짜 목록을 반환한다.
+     * 캘린더 UI에서 파란점 표시에 사용되는 경량 API용 메서드.
+     */
     @Transactional(readOnly = true)
-    public PeriodIntakeSummaryResponse findPeriodIntakes(Long userId, LocalDate startDate, LocalDate endDate) {
+    public IntakeRecordDatesResponse findIntakeDates(Long userId, LocalDate startDate, LocalDate endDate) {
         if (startDate.isAfter(endDate)) {
             throw new IllegalArgumentException("startDate cannot be after endDate");
         }
 
-        List<Intake> intakes = intakeRepository.findPeriodIntakes(userId, startDate, endDate);
-
-        Map<Long, MenuSize> menuSizeMap = fetchMenuSizeMap(intakes);
-        Map<Long, String> optionNameMap = fetchOptionNameMap(intakes);
-
-        List<IntakeHistoryItemResponse> items = intakes.stream()
-                .map(intake -> toHistoryItem(intake, menuSizeMap, optionNameMap))
-                .toList();
-
-        int totalCaffeine = intakes.stream().mapToInt(Intake::getCaffeineSnapshot).sum();
-        int totalSugar = intakes.stream().mapToInt(Intake::getSugarSnapshot).sum();
-        int intakeCount = intakes.stream().mapToInt(Intake::getQuantity).sum();
-
-        return new PeriodIntakeSummaryResponse(
-                startDate, endDate, totalCaffeine, totalSugar,
-                Intake.toEspressoShotCount(totalCaffeine),
-                Intake.toSugarCubeCount(totalSugar),
-                intakeCount, items
-        );
+        List<LocalDate> dates = intakeRepository.findDistinctIntakeDates(userId, startDate, endDate);
+        return new IntakeRecordDatesResponse(startDate, endDate, dates);
     }
 
     /**
@@ -195,11 +178,13 @@ public class IntakeService {
         Map<Long, String> optionNameMap = fetchOptionNameMap(intakes);
         List<DrinkGroupResponse> drinkGroups = buildDrinkGroups(intakes, menuSizeMap, optionNameMap);
 
+        int intakeCount = intakes.stream().mapToInt(Intake::getQuantity).sum();
+
         return new PeriodIntakeStatisticsResponse(
                 startDate, endDate, totalCaffeine, totalSugar,
                 Intake.toEspressoShotCount(totalCaffeine),
                 Intake.toSugarCubeCount(totalSugar),
-                drinkGroups
+                intakeCount, drinkGroups
         );
     }
 
@@ -321,43 +306,6 @@ public class IntakeService {
                 .collect(Collectors.toMap(Option::getId, Option::getName));
     }
 
-    private IntakeHistoryItemResponse toHistoryItem(
-            Intake intake,
-            Map<Long, MenuSize> menuSizeMap,
-            Map<Long, String> optionNameMap
-    ) {
-        MenuSize menuSize = menuSizeMap.get(intake.getMenuSizeId());
-
-        String brandName = "";
-        String menuName = "";
-        String temperature = "";
-        String sizeName = "";
-
-        if (menuSize != null) {
-            MenuTemperature mt = menuSize.getMenuTemperature();
-            Menu menu = mt.getMenu();
-            brandName = menu.getBrand().getName();
-            menuName = menu.getName();
-            temperature = mt.getTemperature().name();
-            sizeName = menuSize.getSizeName();
-        }
-
-        List<IntakeOptionDetailResponse> options = toOptionDetails(intake, optionNameMap);
-
-        return new IntakeHistoryItemResponse(
-                intake.getId(),
-                intake.getIntakeDate(),
-                brandName, menuName, temperature, sizeName,
-                intake.getCaffeineSnapshot(),
-                intake.getSugarSnapshot(),
-                intake.getEspressoShotCount(),
-                intake.getSugarCubeCount(),
-                intake.getQuantity(),
-                options,
-                intake.getCreatedAt()
-        );
-    }
-
     private List<IntakeOptionDetailResponse> toOptionDetails(Intake intake, Map<Long, String> optionNameMap) {
         return intake.getIntakeOptions().stream()
                 .map(o -> new IntakeOptionDetailResponse(
@@ -446,7 +394,10 @@ public class IntakeService {
 
         return new DrinkGroupResponse(
                 brandName, menuName, temperature, sizeName,
-                options, totalQuantity, caffeinePerUnit, sugarPerUnit
+                options, totalQuantity, caffeinePerUnit, sugarPerUnit,
+                totalCaffeine, totalSugar,
+                Intake.toEspressoShotCount(totalCaffeine),
+                Intake.toSugarCubeCount(totalSugar)
         );
     }
 
