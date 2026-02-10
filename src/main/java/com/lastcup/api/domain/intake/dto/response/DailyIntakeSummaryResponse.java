@@ -31,7 +31,7 @@ public record DailyIntakeSummaryResponse(
         @Schema(description = "총 잔 수", example = "2")
         int intakeCount,
 
-        @Schema(description = "음료 종류별 그룹 목록 (잔 수 내림차순)")
-        List<DrinkGroupResponse> drinkGroups
+        @Schema(description = "음료 종류별 섭취 목록 (잔 수 내림차순)")
+        List<DrinkGroupResponse> intakes
 ) {
 }
