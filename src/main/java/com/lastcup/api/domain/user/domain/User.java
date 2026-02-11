@@ -71,6 +71,10 @@ public class User extends BaseTimeEntity {
         }
     }
 
+    public void clearEmail() {
+        this.email = null;
+    }
+
     // email은 소셜 로그인 사용자의 경우 null일 수 있음 (카카오 등)
     // 로컬 회원가입은 SignupRequest DTO에서 @NotBlank @Email로 검증
 
