@@ -92,14 +92,17 @@ public class AuthController {
         return ApiResponse.success(tokens);
     }
 
-    @Operation(summary = "비밀번호 재설정 링크 요청", description = "이메일로 비밀번호 재설정 링크를 전송합니다.")
+    @Operation(
+            summary = "비밀번호 재설정 링크 요청",
+            description = "이메일로 비밀번호 재설정 링크를 전송합니다. 메일의 링크에는 id(사용자 ID)와 token이 함께 포함됩니다."
+    )
     @PostMapping("/password-reset/request")
     public ApiResponse<Boolean> requestPasswordReset(@RequestBody @Valid PasswordResetRequest request) {
         passwordResetService.requestReset(request);
         return ApiResponse.success(true);
     }
 
-    @Operation(summary = "비밀번호 재설정", description = "토큰을 검증하고 새 비밀번호로 변경합니다.")
+    @Operation(summary = "비밀번호 재설정", description = "메일 링크의 token 값을 검증하고 새 비밀번호로 변경합니다.")
     @PostMapping("/password-reset/confirm")
     public ApiResponse<Boolean> confirmPasswordReset(@RequestBody @Valid PasswordResetConfirmRequest request) {
         passwordResetService.confirmReset(request);
