@@ -130,8 +130,8 @@ public class IntakeService {
         int intakeCount = intakes.stream().mapToInt(Intake::getQuantity).sum();
 
         Map<Long, MenuSize> menuSizeMap = fetchMenuSizeMap(intakes);
-        Map<Long, String> optionNameMap = fetchOptionNameMap(intakes);
-        List<DrinkGroupResponse> drinkGroups = buildDrinkGroups(intakes, menuSizeMap, optionNameMap);
+        Map<Long, Option> optionMap = fetchOptionMap(intakes);
+        List<DrinkGroupResponse> drinkGroups = buildDrinkGroups(intakes, menuSizeMap, optionMap);
 
         Optional<UserGoal> goalOpt = userGoalService.findOptionalByDate(userId, targetDate);
         int goalCaffeine = goalOpt.map(UserGoal::getDailyCaffeineTarget)
@@ -179,8 +179,8 @@ public class IntakeService {
         int totalSugar = intakes.stream().mapToInt(Intake::getSugarSnapshot).sum();
 
         Map<Long, MenuSize> menuSizeMap = fetchMenuSizeMap(intakes);
-        Map<Long, String> optionNameMap = fetchOptionNameMap(intakes);
-        List<DrinkGroupResponse> drinkGroups = buildDrinkGroups(intakes, menuSizeMap, optionNameMap);
+        Map<Long, Option> optionMap = fetchOptionMap(intakes);
+        List<DrinkGroupResponse> drinkGroups = buildDrinkGroups(intakes, menuSizeMap, optionMap);
 
         int intakeCount = intakes.stream().mapToInt(Intake::getQuantity).sum();
 
@@ -197,7 +197,7 @@ public class IntakeService {
         Intake intake = findIntakeByIdAndUserId(intakeId, userId);
 
         Map<Long, MenuSize> menuSizeMap = fetchMenuSizeMap(List.of(intake));
-        Map<Long, String> optionNameMap = fetchOptionNameMap(List.of(intake));
+        Map<Long, Option> optionMap = fetchOptionMap(List.of(intake));
 
         MenuSize menuSize = menuSizeMap.get(intake.getMenuSizeId());
 
@@ -220,7 +220,7 @@ public class IntakeService {
             sizeName = menuSize.getSizeName();
         }
 
-        List<IntakeOptionDetailResponse> options = toOptionDetails(intake, optionNameMap);
+        List<IntakeOptionDetailResponse> options = toOptionDetails(intake, optionMap);
 
         return new IntakeDetailResponse(
                 intake.getId(),
@@ -315,7 +315,11 @@ public class IntakeService {
                 .collect(Collectors.toMap(MenuSize::getId, Function.identity()));
     }
 
-    private Map<Long, String> fetchOptionNameMap(List<Intake> intakes) {
+    /**
+     * 섭취 기록 목록에 포함된 모든 옵션을 영양 정보와 함께 일괄 조회한다.
+     * 옵션명과 카페인 정보를 응답에 포함하기 위해 nutrition을 페치 조인한다.
+     */
+    private Map<Long, Option> fetchOptionMap(List<Intake> intakes) {
         Set<Long> optionIds = intakes.stream()
                 .flatMap(i -> i.getIntakeOptions().stream())
                 .map(IntakeOption::getOptionId)
@@ -325,18 +329,33 @@ public class IntakeService {
             return Map.of();
         }
 
-        return optionRepository.findAllById(optionIds).stream()
-                .collect(Collectors.toMap(Option::getId, Option::getName));
+        return optionRepository.findAllWithNutritionByIdIn(optionIds).stream()
+                .collect(Collectors.toMap(Option::getId, Function.identity()));
     }
 
-    private List<IntakeOptionDetailResponse> toOptionDetails(Intake intake, Map<Long, String> optionNameMap) {
+    private List<IntakeOptionDetailResponse> toOptionDetails(Intake intake, Map<Long, Option> optionMap) {
         return intake.getIntakeOptions().stream()
-                .map(o -> new IntakeOptionDetailResponse(
-                        o.getOptionId(),
-                        optionNameMap.getOrDefault(o.getOptionId(), ""),
-                        o.getQuantity()
-                ))
+                .map(o -> {
+                    Option option = optionMap.get(o.getOptionId());
+                    String name = option != null ? option.getName() : "";
+                    Integer caffeineMg = extractCaffeineMg(option);
+
+                    return new IntakeOptionDetailResponse(
+                            o.getOptionId(), name, o.getQuantity(), caffeineMg
+                    );
+                })
                 .toList();
+    }
+
+    /**
+     * Option에서 카페인 함량을 추출한다.
+     * 영양 정보가 없는 옵션(시럽, 토핑 등)은 null을 반환한다.
+     */
+    private Integer extractCaffeineMg(Option option) {
+        if (option == null || option.getNutrition() == null) {
+            return null;
+        }
+        return option.getNutrition().getCaffeineMg();
     }
 
     // ── 음료 종류별 그룹핑 ──
@@ -348,7 +367,7 @@ public class IntakeService {
     private List<DrinkGroupResponse> buildDrinkGroups(
             List<Intake> intakes,
             Map<Long, MenuSize> menuSizeMap,
-            Map<Long, String> optionNameMap
+            Map<Long, Option> optionMap
     ) {
         Map<DrinkGroupKey, List<Intake>> grouped = intakes.stream()
                 .collect(Collectors.groupingBy(
@@ -358,7 +377,7 @@ public class IntakeService {
                 ));
 
         return grouped.entrySet().stream()
-                .map(entry -> toDrinkGroupResponse(entry.getKey(), entry.getValue(), menuSizeMap, optionNameMap))
+                .map(entry -> toDrinkGroupResponse(entry.getKey(), entry.getValue(), menuSizeMap, optionMap))
                 .sorted(Comparator.comparingInt(DrinkGroupResponse::quantity).reversed())
                 .toList();
     }
@@ -379,7 +398,7 @@ public class IntakeService {
             DrinkGroupKey key,
             List<Intake> groupIntakes,
             Map<Long, MenuSize> menuSizeMap,
-            Map<Long, String> optionNameMap
+            Map<Long, Option> optionMap
     ) {
         int totalQuantity = groupIntakes.stream().mapToInt(Intake::getQuantity).sum();
         int totalCaffeine = groupIntakes.stream().mapToInt(Intake::getCaffeineSnapshot).sum();
@@ -408,11 +427,15 @@ public class IntakeService {
         }
 
         List<IntakeOptionDetailResponse> options = key.options().stream()
-                .map(o -> new IntakeOptionDetailResponse(
-                        o.optionId(),
-                        optionNameMap.getOrDefault(o.optionId(), ""),
-                        o.quantity()
-                ))
+                .map(o -> {
+                    Option option = optionMap.get(o.optionId());
+                    String name = option != null ? option.getName() : "";
+                    Integer caffeineMg = extractCaffeineMg(option);
+
+                    return new IntakeOptionDetailResponse(
+                            o.optionId(), name, o.quantity(), caffeineMg
+                    );
+                })
                 .toList();
 
         List<Long> intakeIds = groupIntakes.stream()
