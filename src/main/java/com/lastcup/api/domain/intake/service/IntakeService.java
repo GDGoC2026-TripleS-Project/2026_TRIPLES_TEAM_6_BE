@@ -65,7 +65,8 @@ public class IntakeService {
 
         validateOptions(request.options());
 
-        NutritionSnapshots snapshots = calculateNutritionSnapshots(menuSize.getNutrition(), quantity);
+        int optionCaffeine = calculateOptionCaffeine(request.options(), quantity);
+        NutritionSnapshots snapshots = calculateNutritionSnapshots(menuSize.getNutrition(), quantity, optionCaffeine);
         Intake intake = Intake.create(
                 userId, intakeDate, menuSize.getId(), quantity,
                 snapshots.caffeine(), snapshots.sugar(),
@@ -93,7 +94,8 @@ public class IntakeService {
 
         validateOptions(request.options());
 
-        NutritionSnapshots snapshots = calculateNutritionSnapshots(menuSize.getNutrition(), quantity);
+        int optionCaffeine = calculateOptionCaffeine(request.options(), quantity);
+        NutritionSnapshots snapshots = calculateNutritionSnapshots(menuSize.getNutrition(), quantity, optionCaffeine);
         intake.update(
                 request.intakeDate(), menuSize.getId(), quantity,
                 snapshots.caffeine(), snapshots.sugar(),
@@ -462,9 +464,36 @@ public class IntakeService {
     ) {
     }
 
-    private NutritionSnapshots calculateNutritionSnapshots(Nutrition nutrition, int quantity) {
+    /**
+     * 옵션의 카페인 함량을 계산한다.
+     * 각 옵션의 카페인(mg) × 옵션 수량 × 음료 수량의 합계를 반환한다.
+     */
+    private int calculateOptionCaffeine(List<IntakeOptionRequest> options, int drinkQuantity) {
+        if (options == null || options.isEmpty()) {
+            return 0;
+        }
+
+        Set<Long> optionIds = options.stream()
+                .map(IntakeOptionRequest::optionId)
+                .collect(Collectors.toSet());
+
+        Map<Long, Option> optionMap = optionRepository.findAllWithNutritionByIdIn(optionIds).stream()
+                .collect(Collectors.toMap(Option::getId, Function.identity()));
+
+        int totalOptionCaffeine = 0;
+        for (IntakeOptionRequest optionReq : options) {
+            Option option = optionMap.get(optionReq.optionId());
+            if (option != null && option.getNutrition() != null) {
+                totalOptionCaffeine += option.getNutrition().getCaffeineMg() * optionReq.quantity();
+            }
+        }
+
+        return totalOptionCaffeine * drinkQuantity;
+    }
+
+    private NutritionSnapshots calculateNutritionSnapshots(Nutrition nutrition, int quantity, int optionCaffeine) {
         return new NutritionSnapshots(
-                multiplyOrZero(nutrition.getCaffeineMg(), quantity),
+                multiplyOrZero(nutrition.getCaffeineMg(), quantity) + optionCaffeine,
                 multiplyOrZero(nutrition.getSugarG(), quantity),
                 multiplyNullable(nutrition.getCalories(), quantity),
                 multiplyNullable(nutrition.getSodiumMg(), quantity),
