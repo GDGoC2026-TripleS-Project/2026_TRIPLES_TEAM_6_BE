@@ -63,9 +63,11 @@ public class IntakeService {
         MenuSize menuSize = findMenuSizeWithNutrition(request.menuSizeId());
         UserGoal goal = userGoalService.findByDate(userId, intakeDate);
 
-        validateOptions(request.options());
+        // 옵션 검증 및 조회를 한 번에 수행 (성능 개선)
+        Map<Long, Option> optionMap = validateAndFetchOptions(request.options());
 
-        NutritionSnapshots snapshots = calculateNutritionSnapshots(menuSize.getNutrition(), quantity);
+        int optionCaffeine = calculateOptionCaffeine(request.options(), optionMap, quantity);
+        NutritionSnapshots snapshots = calculateNutritionSnapshots(menuSize.getNutrition(), quantity, optionCaffeine);
         Intake intake = Intake.create(
                 userId, intakeDate, menuSize.getId(), quantity,
                 snapshots.caffeine(), snapshots.sugar(),
@@ -91,9 +93,11 @@ public class IntakeService {
         UserGoal goal = userGoalService.findByDate(userId, request.intakeDate());
         int quantity = request.quantity();
 
-        validateOptions(request.options());
+        // 옵션 검증 및 조회를 한 번에 수행 (성능 개선)
+        Map<Long, Option> optionMap = validateAndFetchOptions(request.options());
 
-        NutritionSnapshots snapshots = calculateNutritionSnapshots(menuSize.getNutrition(), quantity);
+        int optionCaffeine = calculateOptionCaffeine(request.options(), optionMap, quantity);
+        NutritionSnapshots snapshots = calculateNutritionSnapshots(menuSize.getNutrition(), quantity, optionCaffeine);
         intake.update(
                 request.intakeDate(), menuSize.getId(), quantity,
                 snapshots.caffeine(), snapshots.sugar(),
@@ -253,19 +257,38 @@ public class IntakeService {
                 .orElseThrow(() -> new IllegalArgumentException("MenuSize not found: " + menuSizeId));
     }
 
-    private void validateOptions(List<IntakeOptionRequest> options) {
+    /**
+     * 옵션 존재 여부를 검증하고, 영양 정보를 포함하여 조회한다.
+     * 검증과 조회를 한 번에 수행하여 중복 쿼리를 방지한다.
+     *
+     * @param options 검증할 옵션 목록
+     * @return 옵션 ID를 키로 하는 Option 맵 (영양 정보 포함)
+     * @throws IllegalArgumentException 존재하지 않는 옵션이 있을 경우
+     */
+    private Map<Long, Option> validateAndFetchOptions(List<IntakeOptionRequest> options) {
         if (options == null || options.isEmpty()) {
-            return;
+            return Map.of();
         }
 
         Set<Long> optionIds = options.stream()
                 .map(IntakeOptionRequest::optionId)
                 .collect(Collectors.toSet());
 
-        long existingCount = optionRepository.countByIdIn(optionIds);
-        if (existingCount != optionIds.size()) {
-            throw new IllegalArgumentException("Option not found");
+        List<Option> foundOptions = optionRepository.findAllWithNutritionByIdIn(optionIds);
+
+        // 요청한 옵션이 모두 존재하는지 검증
+        if (foundOptions.size() != optionIds.size()) {
+            Set<Long> foundIds = foundOptions.stream()
+                    .map(Option::getId)
+                    .collect(Collectors.toSet());
+            Set<Long> missingIds = optionIds.stream()
+                    .filter(id -> !foundIds.contains(id))
+                    .collect(Collectors.toSet());
+            throw new IllegalArgumentException("Option not found: " + missingIds);
         }
+
+        return foundOptions.stream()
+                .collect(Collectors.toMap(Option::getId, Function.identity()));
     }
 
     private void addOptions(Intake intake, List<IntakeOptionRequest> options) {
@@ -462,9 +485,47 @@ public class IntakeService {
     ) {
     }
 
-    private NutritionSnapshots calculateNutritionSnapshots(Nutrition nutrition, int quantity) {
+    /**
+     * 옵션의 총 카페인 함량을 계산한다.
+     * 
+     * 계산 공식: Σ(옵션 카페인 × 옵션 수량) × 음료 수량
+     * 
+     * 예시: 아메리카노 2잔에 샷 1개(75mg) 추가
+     *       → (75 × 1) × 2 = 150mg
+     *
+     * @param options 옵션 요청 목록
+     * @param optionMap 옵션 ID를 키로 하는 Option 맵 (영양 정보 포함)
+     * @param drinkQuantity 음료 수량
+     * @return 총 옵션 카페인(mg)
+     */
+    private int calculateOptionCaffeine(
+            List<IntakeOptionRequest> options,
+            Map<Long, Option> optionMap,
+            int drinkQuantity
+    ) {
+        if (options == null || options.isEmpty()) {
+            return 0;
+        }
+
+        int totalOptionCaffeine = 0;
+        for (IntakeOptionRequest optionReq : options) {
+            Option option = optionMap.get(optionReq.optionId());
+            
+            // 옵션이 존재하지 않으면 이미 validateAndFetchOptions()에서 예외 발생
+            // 따라서 여기서는 영양 정보만 체크
+            if (option.getNutrition() != null) {
+                int caffeineMg = option.getNutrition().getCaffeineMg();
+                totalOptionCaffeine += caffeineMg * optionReq.quantity();
+            }
+            // 영양 정보가 없는 옵션(시럽 등)은 카페인 0mg로 처리
+        }
+
+        return totalOptionCaffeine * drinkQuantity;
+    }
+
+    private NutritionSnapshots calculateNutritionSnapshots(Nutrition nutrition, int quantity, int optionCaffeine) {
         return new NutritionSnapshots(
-                multiplyOrZero(nutrition.getCaffeineMg(), quantity),
+                multiplyOrZero(nutrition.getCaffeineMg(), quantity) + optionCaffeine,
                 multiplyOrZero(nutrition.getSugarG(), quantity),
                 multiplyNullable(nutrition.getCalories(), quantity),
                 multiplyNullable(nutrition.getSodiumMg(), quantity),

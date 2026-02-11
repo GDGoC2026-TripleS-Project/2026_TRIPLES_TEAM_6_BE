@@ -105,4 +105,8 @@ public class Option extends BaseTimeEntity {
     public OptionSelectionType getSelectionType() {
         return selectionType;
     }
+
+    public OptionNutrition getNutrition() {
+        return nutrition;
+    }
 }
