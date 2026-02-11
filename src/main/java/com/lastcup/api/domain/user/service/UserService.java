@@ -62,6 +62,8 @@ public class UserService {
     public DeleteUserResponse deleteMe(Long userId) {
         User user = findActiveUser(userId);
         user.delete();
+        user.clearEmail();
+        socialAuthRepository.deleteByUserId(userId);
         return new DeleteUserResponse(UserStatus.DELETED);
     }
 
