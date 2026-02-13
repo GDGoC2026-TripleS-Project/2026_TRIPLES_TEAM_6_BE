@@ -1,5 +1,7 @@
 package com.lastcup.api.domain.auth.service;
 
+import static com.lastcup.api.global.config.AppTimeZone.KST;
+
 import com.lastcup.api.domain.auth.domain.RefreshTokenBlacklist;
 import com.lastcup.api.domain.auth.repository.RefreshTokenBlacklistRepository;
 import com.lastcup.api.security.JwtProvider;
@@ -23,13 +25,13 @@ public class RefreshTokenBlacklistService {
 
     public void blacklist(String refreshToken) {
         LocalDateTime expiresAt = jwtProvider.getRefreshTokenExpiresAt(refreshToken);
-        if (refreshTokenBlacklistRepository.existsByTokenAndExpiresAtAfter(refreshToken, LocalDateTime.now())) {
+        if (refreshTokenBlacklistRepository.existsByTokenAndExpiresAtAfter(refreshToken, LocalDateTime.now(KST))) {
             return;
         }
         refreshTokenBlacklistRepository.save(RefreshTokenBlacklist.create(refreshToken, expiresAt));
     }
 
     public boolean isBlacklisted(String refreshToken) {
-        return refreshTokenBlacklistRepository.existsByTokenAndExpiresAtAfter(refreshToken, LocalDateTime.now());
+        return refreshTokenBlacklistRepository.existsByTokenAndExpiresAtAfter(refreshToken, LocalDateTime.now(KST));
     }
 }

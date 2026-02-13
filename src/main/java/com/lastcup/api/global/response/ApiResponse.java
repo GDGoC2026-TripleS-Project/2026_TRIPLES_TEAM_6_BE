@@ -1,5 +1,7 @@
 package com.lastcup.api.global.response;
 
+import static com.lastcup.api.global.config.AppTimeZone.KST;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 
@@ -15,10 +17,10 @@ public record ApiResponse<T>(
         String timestamp
 ) {
     public static <T> ApiResponse<T> success(T data) {
-        return new ApiResponse<>(true, data, null, LocalDateTime.now().toString());
+        return new ApiResponse<>(true, data, null, LocalDateTime.now(KST).toString());
     }
 
     public static ApiResponse<Void> failure(ApiError error) {
-        return new ApiResponse<>(false, null, error, LocalDateTime.now().toString());
+        return new ApiResponse<>(false, null, error, LocalDateTime.now(KST).toString());
     }
 }
