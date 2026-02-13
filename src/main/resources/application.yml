@@ -18,6 +18,8 @@ spring:
     url: ${DB_URL}
     username: ${DB_USER}
     password: ${DB_PASS}
+    hikari:
+      connection-init-sql: SET time_zone = '+09:00'
 
   mail:
     host: ${MAIL_HOST:smtp.naver.com}
