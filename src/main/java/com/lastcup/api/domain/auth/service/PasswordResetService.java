@@ -1,5 +1,7 @@
 package com.lastcup.api.domain.auth.service;
 
+import static com.lastcup.api.global.config.AppTimeZone.KST;
+
 import com.lastcup.api.domain.auth.config.PasswordResetProperties;
 import com.lastcup.api.domain.auth.domain.PasswordResetToken;
 import com.lastcup.api.domain.auth.dto.request.PasswordResetConfirmRequest;
@@ -58,7 +60,7 @@ public class PasswordResetService {
                 .orElseThrow(() -> new IllegalArgumentException("local auth not found"));
 
         String token = UUID.randomUUID().toString();
-        LocalDateTime expiresAt = LocalDateTime.now().plusMinutes(properties.getTokenTtlMinutes());
+        LocalDateTime expiresAt = LocalDateTime.now(KST).plusMinutes(properties.getTokenTtlMinutes());
         tokenRepository.save(PasswordResetToken.create(user.getId(), token, expiresAt));
 
         sendResetMail(request.email(), buildResetLink(token));
@@ -69,7 +71,7 @@ public class PasswordResetService {
         PasswordResetToken token = tokenRepository.findByToken(request.token())
                 .orElseThrow(() -> new IllegalArgumentException("password reset token not found"));
 
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now(KST);
         if (token.isUsed() || token.isExpired(now)) {
             throw new IllegalArgumentException("password reset token invalid");
         }

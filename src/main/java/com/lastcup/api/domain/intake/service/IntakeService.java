@@ -23,6 +23,8 @@ import com.lastcup.api.domain.menu.domain.Nutrition;
 import com.lastcup.api.domain.menu.repository.MenuSizeRepository;
 import com.lastcup.api.domain.option.domain.Option;
 import com.lastcup.api.domain.option.repository.OptionRepository;
+import static com.lastcup.api.global.config.AppTimeZone.KST;
+
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -121,7 +123,7 @@ public class IntakeService {
 
     @Transactional(readOnly = true)
     public DailyIntakeSummaryResponse findDailyIntakes(Long userId, LocalDate date) {
-        LocalDate targetDate = date != null ? date : LocalDate.now();
+        LocalDate targetDate = date != null ? date : LocalDate.now(KST);
 
         List<Intake> intakes = intakeRepository.findDailyIntakes(userId, targetDate);
 
@@ -560,7 +562,7 @@ public class IntakeService {
     // ── 유틸 ──
 
     private LocalDate resolveIntakeDate(LocalDate intakeDate) {
-        return intakeDate != null ? intakeDate : LocalDate.now();
+        return intakeDate != null ? intakeDate : LocalDate.now(KST);
     }
 
     private int resolveQuantity(Integer quantity) {

@@ -1,5 +1,7 @@
 package com.lastcup.api.domain.user.service;
 
+import static com.lastcup.api.global.config.AppTimeZone.KST;
+
 import com.lastcup.api.domain.user.domain.User;
 import com.lastcup.api.domain.user.domain.UserDevice;
 import com.lastcup.api.domain.user.domain.UserPlatform;
@@ -29,7 +31,7 @@ public class UserDeviceService {
         User user = findUser(userId);
         UserDevice device = findOrCreateByToken(UserDevice.create(user, fcmToken, platform));
         device.updatePlatform(platform);
-        device.updateLastSeenAt(LocalDateTime.now());
+        device.updateLastSeenAt(LocalDateTime.now(KST));
 
         userDeviceRepository.save(device);
         return new RegisterDeviceResponse(true);
