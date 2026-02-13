@@ -37,9 +37,9 @@ public class BrandService {
 
     private List<Brand> findBrandsByKeyword(String keyword) {
         if (isBlank(keyword)) {
-            return brandRepository.findAllByOrderByNameAsc();
+            return brandRepository.findAllByOrderByIdAsc();
         }
-        return brandRepository.findByNameContainingIgnoreCaseOrderByNameAsc(keyword);
+        return brandRepository.findByNameContainingIgnoreCaseOrderByIdAsc(keyword);
     }
 
     private Set<Long> findFavoriteBrandIds(Long userId) {
@@ -62,7 +62,7 @@ public class BrandService {
 
         responses.sort(
                 Comparator.comparing(BrandResponse::isFavorite).reversed()
-                        .thenComparing(BrandResponse::name)
+                        .thenComparing(BrandResponse::id)
         );
     }
 

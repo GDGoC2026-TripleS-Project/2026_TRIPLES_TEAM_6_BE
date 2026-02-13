@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface BrandRepository extends JpaRepository<Brand, Long> {
 
-    List<Brand> findByNameContainingIgnoreCaseOrderByNameAsc(String keyword);
+    List<Brand> findByNameContainingIgnoreCaseOrderByIdAsc(String keyword);
 
-    List<Brand> findAllByOrderByNameAsc();
+    List<Brand> findAllByOrderByIdAsc();
 }
