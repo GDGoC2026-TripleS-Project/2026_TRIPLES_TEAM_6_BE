@@ -9,6 +9,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import static com.lastcup.api.global.config.AppTimeZone.KST;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -191,7 +193,7 @@ public class Intake extends BaseTimeEntity {
         if (intakeDate == null) {
             throw new IllegalArgumentException("intakeDate is null");
         }
-        if (intakeDate.isAfter(LocalDate.now())) {
+        if (intakeDate.isAfter(LocalDate.now(KST))) {
             throw new IllegalArgumentException("intakeDate cannot be in the future");
         }
     }

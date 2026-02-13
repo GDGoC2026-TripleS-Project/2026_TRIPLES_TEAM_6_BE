@@ -1,5 +1,7 @@
 package com.lastcup.api.domain.auth.service;
 
+import static com.lastcup.api.global.config.AppTimeZone.KST;
+
 import com.lastcup.api.domain.auth.domain.AccessTokenBlacklist;
 import com.lastcup.api.domain.auth.repository.AccessTokenBlacklistRepository;
 import com.lastcup.api.security.JwtProvider;
@@ -23,13 +25,13 @@ public class AccessTokenBlacklistService {
 
     public void blacklist(String accessToken) {
         LocalDateTime expiresAt = jwtProvider.getAccessTokenExpiresAt(accessToken);
-        if (accessTokenBlacklistRepository.existsByTokenAndExpiresAtAfter(accessToken, LocalDateTime.now())) {
+        if (accessTokenBlacklistRepository.existsByTokenAndExpiresAtAfter(accessToken, LocalDateTime.now(KST))) {
             return;
         }
         accessTokenBlacklistRepository.save(AccessTokenBlacklist.create(accessToken, expiresAt));
     }
 
     public boolean isBlacklisted(String accessToken) {
-        return accessTokenBlacklistRepository.existsByTokenAndExpiresAtAfter(accessToken, LocalDateTime.now());
+        return accessTokenBlacklistRepository.existsByTokenAndExpiresAtAfter(accessToken, LocalDateTime.now(KST));
     }
 }

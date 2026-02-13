@@ -1,5 +1,7 @@
 package com.lastcup.api.domain.notification.service;
 
+import static com.lastcup.api.global.config.AppTimeZone.KST;
+
 import com.lastcup.api.domain.notification.domain.NotificationDispatchLog;
 import com.lastcup.api.domain.notification.domain.NotificationType;
 import com.lastcup.api.domain.notification.repository.NotificationDispatchLogRepository;
@@ -17,7 +19,6 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.ZoneId;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,7 +26,6 @@ import java.util.stream.Collectors;
 public class UserNotificationScheduler {
 
     private static final Logger log = LoggerFactory.getLogger(UserNotificationScheduler.class);
-    private static final ZoneId KST = ZoneId.of("Asia/Seoul");
 
     private static final String RECORD_TITLE = "기록 알림";
     private static final String RECORD_BODY = "오늘의 기록을 남겨보세요.";

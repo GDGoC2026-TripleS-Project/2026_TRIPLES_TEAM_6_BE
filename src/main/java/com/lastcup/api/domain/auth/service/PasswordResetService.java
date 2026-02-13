@@ -1,5 +1,7 @@
 package com.lastcup.api.domain.auth.service;
 
+import static com.lastcup.api.global.config.AppTimeZone.KST;
+
 import com.lastcup.api.domain.auth.config.PasswordResetProperties;
 import com.lastcup.api.domain.auth.domain.PasswordResetToken;
 import com.lastcup.api.domain.auth.dto.request.PasswordResetConfirmRequest;
@@ -86,7 +88,7 @@ public class PasswordResetService {
     public void confirmReset(PasswordResetConfirmRequest request) {
         PasswordResetToken token = getValidToken(request.loginId(), request.email(), request.verificationCode());
 
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now(KST);
         if (token.isUsed() || token.isExpired(now)) {
             throw new IllegalArgumentException("password reset code invalid");
         }
