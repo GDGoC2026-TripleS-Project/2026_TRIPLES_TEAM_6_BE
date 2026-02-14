@@ -80,6 +80,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private void authenticate(String token) {
         jwtProvider.validate(token, "ACCESS");
+        if (accessTokenBlacklistService.isBlacklisted(token)) {
+            throw new JwtValidationException(JwtErrorCode.JWT_ACCESS_INVALID);
+        }
         AuthUser authUser = jwtProvider.parseAccessToken(token);
 
         UsernamePasswordAuthenticationToken authentication =

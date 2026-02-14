@@ -68,7 +68,7 @@ public class PasswordResetService {
         }
 
         String verificationCode = generateVerificationCode();
-        LocalDateTime expiresAt = LocalDateTime.now().plusMinutes(properties.getTokenTtlMinutes());
+        LocalDateTime expiresAt = LocalDateTime.now(KST).plusMinutes(properties.getTokenTtlMinutes());
         tokenRepository.save(PasswordResetToken.create(user.getId(), verificationCode, expiresAt));
 
         sendResetMail(request.email(), verificationCode);
@@ -77,7 +77,7 @@ public class PasswordResetService {
     @Transactional(readOnly = true)
     public void verifyResetCode(PasswordResetVerifyRequest request) {
         PasswordResetToken token = getValidToken(request.loginId(), request.email(), request.verificationCode());
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now(KST);
         if (token.isUsed() || token.isExpired(now)) {
             throw new IllegalArgumentException("password reset code invalid");
         }
