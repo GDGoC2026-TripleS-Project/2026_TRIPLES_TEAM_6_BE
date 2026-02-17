@@ -3,11 +3,13 @@ server:
   port: 8080
   servlet:
     context-path: /
-
+  shutdown: graceful
 
 spring:
   application:
     name: lastcup-api
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
 
   servlet:
     multipart:

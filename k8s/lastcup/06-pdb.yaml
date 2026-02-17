@@ -1,0 +1,10 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: lastcup-api-pdb
+  namespace: lastcup
+spec:
+  minAvailable: 1 # "항상 최소 1개의 Pod은 살아있어야 한다"
+  selector:
+    matchLabels:
+      app: lastcup-api # "lastcup-api" 라벨이 붙은 Pod이 대상 즉, 이 라벨은 가진 Pod을 보호함

@@ -5,6 +5,7 @@ metadata:
   namespace: lastcup
 spec:
   metrics:
+    # 1. 앱이 살아있는가?
     - name: preview-actuator-health
       interval: 10s
       count: 6
@@ -15,3 +16,15 @@ spec:
           timeoutSeconds: 5
           jsonPath: "{$.status}"
       successCondition: result == "UP"
+
+    # 2. API 스택이 정상 동작하는가?
+    - name: preview-api-docs
+      interval: 10s
+      count: 6
+      failureLimit: 2
+      provider:
+        web:
+          # 클러스터 내부에서 접근하므로 서비스 이름과 네임스페이스로 URL 작성
+          url: "http://lastcup-api-preview.lastcup.svc.cluster.local/v3/api-docs"
+          timeoutSeconds: 5
+      successCondition: result.statusCode == 200

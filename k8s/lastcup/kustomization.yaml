@@ -5,6 +5,7 @@ resources:
   - secrets/04-ingress.yaml
   - analysis/lastcup-api-prepromote-analysis.yaml
   - sealed-secrets/05-sealed-secret.yaml
+  - 06-pdb.yaml
 
 images:
   - name: ghcr.io/gdgoc2026-triples-project/2026_triples_team_6_be
