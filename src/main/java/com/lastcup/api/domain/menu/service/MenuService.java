@@ -116,7 +116,7 @@ public class MenuService {
     }
 
     public MenuDetailResponse findMenuDetail(Long menuId) {
-        Menu menu = menuRepository.findById(menuId)
+        Menu menu = menuRepository.findWithBrandById(menuId)
                 .orElseThrow(() -> new IllegalArgumentException("Menu not found: " + menuId));
 
         List<TemperatureType> temperatures = menuTemperatureRepository
