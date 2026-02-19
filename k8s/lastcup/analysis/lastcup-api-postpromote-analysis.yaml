@@ -1,7 +1,7 @@
-apiVersion: argoproj.io/v1alpha1
-kind: AnalysisTemplate
+apiVersion: argoproj.io/v1alpha1    # ARGO ROLLOUT CRD 의 API 그룹, v1alpha1 양식
+kind: AnalysisTemplate              # 이 파일로 AnalysisTemplate을 만들겠다
 metadata:
-  # pre-promote와 동일 항목을 검증하지만, 실제 사용자 트래픽을 받는 active 서비스를 체크ㅡ
+  # pre-promote와 동일 항목을 검증하지만, 실제 사용자 트래픽을 받는 active 서비스를 체크
   # 실패시 Argo Rollouts가 자동으로 구버전으로 롤백한다.
   name: lastcup-api-postpromote
   namespace: lastcup
@@ -20,7 +20,7 @@ spec:
       successCondition: result == "UP"
 
     # 2. 승격 후 API 스택이 정상 동작하는가?
-    - name: active-api-docs
+    - name: active-api-docsㅇ
       interval: 10s
       count: 6
       failureLimit: 2

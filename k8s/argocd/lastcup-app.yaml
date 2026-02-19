@@ -1,29 +1,34 @@
-apiVersion: argoproj.io/v1alpha1
-kind: Application
+apiVersion: argoproj.io/v1alpha1    # ARGO CD CRD 의 API 그룹, v1alpha1 양식
+kind: Application                   # Application 제작
 metadata:
   name: lastcup
   namespace: argocd
-  annotations:
+  annotations: # Argo CD Image Updater 설정
+    # 감시할 이미지 지정
     argocd-image-updater.argoproj.io/image-list: lastcup-api=ghcr.io/gdgoc2026-triples-project/2026_triples_team_6_be:latest
+    # 태그명이 아닌 이미지 해시값 변경으로 새 버전 감지
     argocd-image-updater.argoproj.io/lastcup-api.update-strategy: digest
+    # latest 태그만 추적
     argocd-image-updater.argoproj.io/lastcup-api.allow-tags: regexp:^latest$
+    # ARGO CD 네임스페이스의 ghcr-cred 시크릿을 참조해 GHCR 인증 정보로 사용
     argocd-image-updater.argoproj.io/lastcup-api.pull-secret: pullsecret:argocd/ghcr-cred
+    # 이미지 변경사항을 Git 커밋 대신 Argo CD 내부 파라미터에 override 저장
     argocd-image-updater.argoproj.io/write-back-method: argocd
 spec:
-  project: default
+  project: default # Argo CD 프로젝트 이름
   source:
     repoURL: https://github.com/GDGoC2026-TripleS-Project/2026_TRIPLES_TEAM_6_BE.git
     targetRevision: main
-    path: k8s/lastcup
+    path: k8s/lastcup # 백엔드 저장소의 k8s/lastcup 폴더의 main 브랜치를 소스로 사용
     kustomize:
       images:
-        - ghcr.io/gdgoc2026-triples-project/2026_triples_team_6_be:latest
+        - ghcr.io/gdgoc2026-triples-project/2026_triples_team_6_be:latest # Argo CD Image Updater가 위 저장소의 해당 이미지를 찾아서 태그를 업데이트할 것이다
   destination:
-    server: https://kubernetes.default.svc
+    server: https://kubernetes.default.svc # 클러스터 내부에서 접근하는 API 서버 주소
     namespace: lastcup
   syncPolicy:
     automated:
-      prune: true
-      selfHeal: true
+      prune: true # git에서 YAML 삭제시 클러스터에서 YAML 자동 삭제
+      selfHeal: true # 클러스터에서 YAML 변경해도 ARGO CD가 git 상태로 자동 복구
     syncOptions:
-      - CreateNamespace=true
+      - CreateNamespace=true # namespace 없으면 자동 생성
