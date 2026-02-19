@@ -5,7 +5,6 @@ import static com.lastcup.api.global.config.AppTimeZone.KST;
 import com.lastcup.api.domain.notification.domain.NotificationDispatchLog;
 import com.lastcup.api.domain.notification.domain.NotificationType;
 import com.lastcup.api.domain.notification.repository.NotificationDispatchLogRepository;
-import com.lastcup.api.domain.user.domain.UserDevice;
 import com.lastcup.api.domain.user.domain.UserNotificationSetting;
 import com.lastcup.api.domain.user.repository.UserDeviceRepository;
 import com.lastcup.api.domain.user.repository.UserNotificationSettingRepository;
@@ -20,6 +19,14 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
@@ -75,32 +82,58 @@ public class UserNotificationScheduler {
             String title,
             String body
     ) {
+        if (settings.isEmpty()) {
+            return;
+        }
+
+        LocalDate today = LocalDate.now(KST);
+        List<Long> userIds = settings.stream()
+                .map(UserNotificationSetting::getUserId)
+                .distinct()
+                .collect(Collectors.toList());
+
+        Set<Long> sentUserIds = new HashSet<>(
+                dispatchLogRepository.findSentUserIdsByTypeAndDateInUsers(notificationType, today, userIds)
+        );
+        Map<Long, List<String>> tokensByUserId = groupEnabledTokensByUserId(userIds);
+
         for (UserNotificationSetting setting : settings) {
             Long userId = setting.getUserId();
+            if (sentUserIds.contains(userId)) {
+                continue;
+            }
+            List<String> tokens = tokensByUserId.getOrDefault(userId, List.of());
+            if (tokens.isEmpty()) {
+                continue;
+            }
+
             try {
-                sendIfNotSent(userId, notificationType, title, body);
+                fcmNotificationService.sendToTokens(tokens, title, body);
+                saveDispatchLog(userId, notificationType, today);
             } catch (Exception e) {
                 log.error("Notification send failed. userId={}, type={}", userId, notificationType, e);
             }
         }
     }
 
-    private void sendIfNotSent(Long userId, NotificationType notificationType, String title, String body) {
-        LocalDate today = LocalDate.now(KST);
-        if (dispatchLogRepository.existsByUserIdAndNotificationTypeAndSentDate(userId, notificationType, today)) {
-            return;
+    private Map<Long, List<String>> groupEnabledTokensByUserId(Collection<Long> userIds) {
+        Map<Long, Set<String>> tokenSetByUserId = new HashMap<>();
+
+        for (UserDeviceRepository.UserDeviceTokenProjection tokenProjection : deviceRepository.findEnabledTokensByUserIds(userIds)) {
+            String token = tokenProjection.getFcmToken();
+            if (token == null || token.isBlank()) {
+                continue;
+            }
+            tokenSetByUserId
+                    .computeIfAbsent(tokenProjection.getUserId(), key -> new HashSet<>())
+                    .add(token);
         }
-        List<String> tokens = deviceRepository.findAllByUserIdAndIsEnabledTrue(userId).stream()
-                .map(UserDevice::getFcmToken)
-                .filter(token -> token != null && !token.isBlank())
-                .distinct()
-                .collect(Collectors.toList());
-        if (tokens.isEmpty()) {
-            return;
-        }
-        fcmNotificationService.sendToTokens(tokens, title, body);
-        saveDispatchLog(userId, notificationType, today);
+
+        Map<Long, List<String>> tokensByUserId = new HashMap<>();
+        tokenSetByUserId.forEach((userId, tokenSet) -> tokensByUserId.put(userId, new ArrayList<>(tokenSet)));
+        return tokensByUserId;
     }
+
 
     private void saveDispatchLog(Long userId, NotificationType notificationType, LocalDate today) {
         try {
