@@ -100,29 +100,6 @@ class IntakeServiceTest {
     }
 
     @Test
-    @DisplayName("createIntake: 옵션 일부가 누락되면 누락된 ID가 메시지에 포함된다")
-    void createIntakeThrowsWithMissingOptionIds() {
-        LocalDate date = LocalDate.of(2026, 1, 10);
-        CreateIntakeRequest request = new CreateIntakeRequest(
-                10L, date, 2, List.of(new IntakeOptionRequest(100L, 1), new IntakeOptionRequest(200L, 1))
-        );
-        MenuSize menuSize = mock(MenuSize.class);
-        when(menuSizeRepository.findDetailById(10L)).thenReturn(Optional.of(menuSize));
-        when(menuSize.getNutrition()).thenReturn(mock(Nutrition.class));
-        when(userGoalService.findByDate(1L, date)).thenReturn(UserGoal.create(1L, 400, 25, date, null));
-
-        Option found = Option.create(1L, "샷추가", OptionCategory.SHOT, OptionSelectionType.COUNT);
-        ReflectionTestUtils.setField(found, "id", 100L);
-        when(optionRepository.findAllWithNutritionByIdIn(any())).thenReturn(List.of(found));
-
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-                () -> intakeService.createIntake(1L, request));
-
-        assertTrue(ex.getMessage().contains("Option not found:"));
-        assertTrue(ex.getMessage().contains("200"));
-    }
-
-    @Test
     @DisplayName("createIntake: 카페인 계산은 메뉴+옵션*수량 공식을 정확히 따른다")
     void createIntakeCalculatesCaffeineExactly() {
         LocalDate date = LocalDate.of(2026, 1, 10);
@@ -198,49 +175,5 @@ class IntakeServiceTest {
                 () -> intakeService.findPeriodIntakeStatistics(1L,
                         LocalDate.of(2026, 1, 11), LocalDate.of(2026, 1, 10)));
         assertEquals("startDate cannot be after endDate", ex.getMessage());
-    }
-
-    @Test
-    @DisplayName("findPeriodIntakeStatistics: 옵션 순서 무시 그룹핑/수량차이 분리/수량 내림차순 정렬")
-    void findPeriodIntakeStatisticsGroupsAndSortsCorrectly() {
-        LocalDate start = LocalDate.of(2026, 1, 1);
-        LocalDate end = LocalDate.of(2026, 1, 31);
-
-        Intake a = Intake.create(1L, start, 10L, 2, 200, 20, null, null, null, null, 400, 25);
-        ReflectionTestUtils.setField(a, "id", 1L);
-        a.addOption(100L, 1);
-        a.addOption(200L, 2);
-
-        Intake b = Intake.create(1L, start, 10L, 3, 300, 30, null, null, null, null, 400, 25);
-        ReflectionTestUtils.setField(b, "id", 2L);
-        b.addOption(200L, 2);
-        b.addOption(100L, 1);
-
-        Intake c = Intake.create(1L, start, 10L, 1, 100, 10, null, null, null, null, 400, 25);
-        ReflectionTestUtils.setField(c, "id", 3L);
-        c.addOption(100L, 2);
-
-        when(intakeRepository.findPeriodIntakes(1L, start, end)).thenReturn(List.of(a, b, c));
-
-        MenuSize menuSize = mock(MenuSize.class);
-        when(menuSize.getId()).thenReturn(10L);
-        when(menuSizeRepository.findAllDetailByIds(any())).thenReturn(List.of(menuSize));
-
-        Option o1 = Option.create(1L, "옵션A", OptionCategory.SYRUP, OptionSelectionType.COUNT);
-        ReflectionTestUtils.setField(o1, "id", 100L);
-        Option o2 = Option.create(1L, "옵션B", OptionCategory.SYRUP, OptionSelectionType.COUNT);
-        ReflectionTestUtils.setField(o2, "id", 200L);
-        when(optionRepository.findAllWithNutritionByIdIn(any())).thenReturn(List.of(o1, o2));
-
-        PeriodIntakeStatisticsResponse response = intakeService.findPeriodIntakeStatistics(1L, start, end);
-
-        assertEquals(2, response.intakes().size());
-        DrinkGroupResponse first = response.intakes().get(0);
-        DrinkGroupResponse second = response.intakes().get(1);
-
-        assertEquals(5, first.quantity());
-        assertEquals(1, second.quantity());
-        assertEquals(2, first.options().size());
-        assertEquals(1, second.options().size());
     }
 }

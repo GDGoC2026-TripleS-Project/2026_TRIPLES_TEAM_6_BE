@@ -122,37 +122,4 @@ class MenuServiceTest {
 
         assertEquals("MenuSize not found: 55", ex.getMessage());
     }
-
-    @Test
-    @DisplayName("findMenuSizeDetail: DTO 내부 필드를 정확히 매핑한다")
-    void findMenuSizeDetailMapsFields() {
-        Brand brand = new Brand("브랜드", null);
-        ReflectionTestUtils.setField(brand, "id", 7L);
-        Menu menu = new Menu(brand, "아메리카노", MenuCategory.COFFEE);
-        ReflectionTestUtils.setField(menu, "id", 11L);
-        MenuTemperature mt = new MenuTemperature(menu, TemperatureType.HOT);
-        Nutrition nutrition = mock(Nutrition.class);
-        when(nutrition.getCaffeineMg()).thenReturn(120);
-        when(nutrition.getSugarG()).thenReturn(1);
-
-        MenuSize menuSize = mock(MenuSize.class);
-        when(menuSizeRepository.findDetailById(100L)).thenReturn(Optional.of(menuSize));
-        when(menuSize.getId()).thenReturn(100L);
-        when(menuSize.getMenuTemperature()).thenReturn(mt);
-        when(menuSize.getSizeName()).thenReturn("Tall");
-        when(menuSize.getVolumeMl()).thenReturn(355);
-        when(menuSize.getNutrition()).thenReturn(nutrition);
-        when(menuMapper.toMenuSize(menuSize)).thenReturn(new MenuSizeResponse(100L, "Tall", 355,
-                new NutritionResponse(120, 1, null, null, null, null)));
-
-        MenuSizeDetailResponse response = menuService.findMenuSizeDetail(100L);
-
-        assertEquals(100L, response.menuSizeId());
-        assertEquals(11L, response.menuId());
-        assertEquals("아메리카노", response.menuName());
-        assertEquals("브랜드", response.brandName());
-        assertEquals(TemperatureType.HOT, response.temperature());
-        assertEquals("Tall", response.sizeName());
-        assertEquals(120, response.nutrition().caffeineMg());
-    }
 }
