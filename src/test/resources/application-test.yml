@@ -1,0 +1,43 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:lastcup;MODE=MySQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;DATABASE_TO_LOWER=TRUE
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+    hikari:
+      connection-init-sql:
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        format_sql: false
+        show_sql: false
+        jdbc.time_zone: Asia/Seoul
+
+  mail:
+    host: localhost
+    port: 2525
+    username: test
+    password: test
+
+APPLE_CLIENT_ID: test-apple-client-id
+
+app:
+  oauth:
+    apple:
+      client-id: ${APPLE_CLIENT_ID}
+  firebase:
+    admin-key: '{"type":"service_account","project_id":"test","private_key_id":"test","private_key":"-----BEGIN PRIVATE KEY-----\\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASC\\n-----END PRIVATE KEY-----\\n","client_email":"test@test.iam.gserviceaccount.com","client_id":"test","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_x509_cert_url":"https://www.googleapis.com/robot/v1/metadata/x509/test"}'
+
+jwt:
+  issuer: test-issuer
+  secret: test-secret-key-test-secret-key-test-secret-key-1234
+  access-token-validity: 3600000
+  refresh-token-validity: 1209600000
+
+aws:
+  s3:
+    bucket: test-bucket
