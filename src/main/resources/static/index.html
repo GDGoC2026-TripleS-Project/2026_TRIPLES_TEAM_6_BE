@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LastCup - 카페인과 당 섭취 기록 서비스</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0B1120;
+            color: #E0E0E0;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* ── Hero ── */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 2rem;
+            background: linear-gradient(180deg, #0B1120 0%, #132238 100%);
+        }
+
+        .logo-icon {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 1.5rem;
+        }
+
+        .logo-text {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #4FC3F7;
+            letter-spacing: 0.15em;
+            margin-bottom: 2rem;
+        }
+
+        .hero-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: #FFFFFF;
+            margin-bottom: 1rem;
+        }
+
+        .hero-sub {
+            font-size: 1.1rem;
+            color: #90A4AE;
+            max-width: 500px;
+            margin-bottom: 3rem;
+        }
+
+        .hero-philosophy {
+            font-size: 1rem;
+            color: #4FC3F7;
+            border: 1px solid rgba(79, 195, 247, 0.3);
+            border-radius: 12px;
+            padding: 1rem 2rem;
+            max-width: 480px;
+        }
+
+        /* ── Overview ── */
+        .overview {
+            padding: 6rem 2rem;
+            text-align: center;
+            background: linear-gradient(180deg, #132238 0%, #0F1B2D 100%);
+        }
+
+        .section-label {
+            font-size: 0.85rem;
+            color: #4FC3F7;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+        }
+
+        .section-title {
+            font-size: 1.6rem;
+            font-weight: 600;
+            color: #FFFFFF;
+            margin-bottom: 1rem;
+        }
+
+        .section-desc {
+            font-size: 1rem;
+            color: #90A4AE;
+            max-width: 560px;
+            margin: 0 auto 3rem;
+        }
+
+        .overview-cards {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .overview-card {
+            flex: 1;
+            min-width: 240px;
+            max-width: 280px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 2rem 1.5rem;
+        }
+
+        .card-number {
+            display: inline-block;
+            width: 32px;
+            height: 32px;
+            line-height: 32px;
+            border-radius: 50%;
+            background: #4FC3F7;
+            color: #0B1120;
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #FFFFFF;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-desc {
+            font-size: 0.9rem;
+            color: #90A4AE;
+        }
+
+        /* ── Features ── */
+        .features {
+            padding: 6rem 2rem;
+            text-align: center;
+            background: linear-gradient(180deg, #0F1B2D 0%, #0B1120 100%);
+        }
+
+        .feature-grid {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            max-width: 960px;
+            margin: 0 auto;
+        }
+
+        .feature-item {
+            flex: 1;
+            min-width: 200px;
+            max-width: 280px;
+            padding: 2rem 1.5rem;
+        }
+
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-name {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: #4FC3F7;
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-desc {
+            font-size: 0.9rem;
+            color: #90A4AE;
+        }
+
+        /* ── Footer ── */
+        .footer {
+            padding: 3rem 2rem;
+            text-align: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .footer-logo {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #4FC3F7;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-credit {
+            font-size: 0.85rem;
+            color: #546E7A;
+        }
+
+        .footer-links {
+            margin-top: 1rem;
+        }
+
+        .footer-links a {
+            font-size: 0.85rem;
+            color: #4FC3F7;
+            text-decoration: none;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+
+        .footer-links a:hover {
+            opacity: 1;
+        }
+
+        /* ── Download ── */
+        .download {
+            padding: 6rem 2rem;
+            text-align: center;
+            background: linear-gradient(180deg, #0B1120 0%, #0E1A2E 100%);
+        }
+
+        .download-cards {
+            display: flex;
+            gap: 2.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .download-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .qr-wrapper {
+            width: 160px;
+            height: 160px;
+            background: #FFFFFF;
+            border-radius: 12px;
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .qr-wrapper img {
+            width: 100%;
+            height: 100%;
+        }
+
+        .download-label {
+            font-size: 0.9rem;
+            color: #90A4AE;
+        }
+
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.7rem 1.5rem;
+            border-radius: 10px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: opacity 0.2s;
+        }
+
+        .download-btn:hover { opacity: 0.85; }
+
+        .btn-appstore {
+            background: #FFFFFF;
+            color: #0B1120;
+        }
+
+        .btn-instagram {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #E0E0E0;
+        }
+
+        .btn-icon {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 640px) {
+            .hero-title { font-size: 1.4rem; }
+            .logo-text { font-size: 2rem; }
+            .section-title { font-size: 1.3rem; }
+            .overview-card { min-width: 100%; }
+            .feature-item { min-width: 100%; }
+            .download-cards { gap: 2rem; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Hero -->
+<section class="hero">
+    <img class="logo-icon" src="logo.png" alt="LastCup">
+    <div class="logo-text">LASTCUP</div>
+    <h1 class="hero-title">하루에 카페인과 당을<br>얼마나 먹고 있을까?</h1>
+    <p class="hero-sub">
+        카페인과 당이 들어있는 카페 음료를 자주 섭취하지만,
+        얼마나 마셨는지는 파악하기 어렵습니다.
+    </p>
+    <div class="hero-philosophy">
+        라스트컵은 강요하지 않아요.<br>
+        스스로 알아차릴 수 있도록 도울 뿐입니다.
+    </div>
+</section>
+
+<!-- Overview -->
+<section class="overview">
+    <div class="section-label">Problem</div>
+    <h2 class="section-title">섭취량을 인식하는데 어려움을 느끼고 있었어요.</h2>
+    <p class="section-desc">
+        커피가 아닌 다른 음료에도 카페인이 들어있어 내가 카페인을 얼마나 마셨는지 모르고,
+        영양성분표는 숫자로 제공되어 직관적으로 이해하기 어려웠어요.
+    </p>
+    <div class="overview-cards">
+        <div class="overview-card">
+            <div class="card-number">1</div>
+            <div class="card-title">얼마나 마셨는지<br>파악하기 어려워요.</div>
+            <div class="card-desc">
+                카페인을 일정 수준 이상 섭취하면
+                잠을 못 자거나, 불안 증상을 겪기도 해요.
+            </div>
+        </div>
+        <div class="overview-card">
+            <div class="card-number">2</div>
+            <div class="card-title">영양정보의 섭취량을<br>인식하기 어려워요.</div>
+            <div class="card-desc">
+                영양성분표는 숫자로 제공되어 직관적으로 이해하기 어렵고,
+                결국 내가 섭취한 카페인, 당류의 양을 돌아볼 수 없어요.
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features -->
+<section class="features">
+    <div class="section-label">Main Features</div>
+    <h2 class="section-title">핵심 기능을 도출했어요.</h2>
+    <p class="section-desc">
+        음료에 있는 카페인과 당을 인식하는 과정에서
+        발생하는 문제점을 바탕으로 기능을 설계했어요.
+    </p>
+    <div class="feature-grid">
+        <div class="feature-item">
+            <div class="feature-icon">&#9749;</div>
+            <div class="feature-name">간단한 섭취 기록</div>
+            <div class="feature-desc">
+                영양정보를 직접 확인하는 것이 아니라,
+                브랜드와 메뉴 선택만으로 간단하게 기록
+            </div>
+        </div>
+        <div class="feature-item">
+            <div class="feature-icon">&#128200;</div>
+            <div class="feature-name">그래프로 한눈에 인식</div>
+            <div class="feature-desc">
+                설정한 기준량과 섭취량을 그래프로 보여주고,
+                에스프레소 샷과 각설탕 단위로 직관적 전달
+            </div>
+        </div>
+        <div class="feature-item">
+            <div class="feature-icon">&#127919;</div>
+            <div class="feature-name">퍼스널 기준량 설정</div>
+            <div class="feature-desc">
+                기준 초과 여부를 경고가 아닌
+                알림의 수준으로 제공하여 기록에 집중
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Download -->
+<section class="download">
+    <div class="section-label">Download</div>
+    <h2 class="section-title">라스트컵을 만나보세요</h2>
+    <p class="section-desc">
+        App Store에서 다운로드하거나, 인스타그램에서 소식을 확인하세요.
+    </p>
+    <div class="download-cards">
+        <div class="download-card">
+            <div class="qr-wrapper">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=136x136&data=https%3A%2F%2Fapps.apple.com%2Fkr%2Fapp%2F%25EB%259D%25BC%25EC%258A%25A4%25ED%258A%25B8%25EC%25BB%25B5%2Fid6758907741" alt="App Store QR">
+            </div>
+            <a class="download-btn btn-appstore" href="https://apps.apple.com/kr/app/%EB%9D%BC%EC%8A%A4%ED%8A%B8%EC%BB%B5/id6758907741" target="_blank" rel="noopener">
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+                App Store
+            </a>
+        </div>
+        <div class="download-card">
+            <div class="qr-wrapper">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=136x136&data=https%3A%2F%2Fwww.instagram.com%2Flastcup.official%2F" alt="Instagram QR">
+            </div>
+            <a class="download-btn btn-instagram" href="https://www.instagram.com/lastcup.official/" target="_blank" rel="noopener">
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+                Instagram
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+    <div class="footer-logo">LASTCUP</div>
+    <div class="footer-credit">GDGoC 25-26 TripleS Project</div>
+</footer>
+
+</body>
+</html>
