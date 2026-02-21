@@ -179,3 +179,18 @@ Git에는 암호화된 값만 존재하고, 복호화는 클러스터 안에서�
 
 > 향후 External Secrets Operator + HashiCorp Vault 도입을 검토 중입니다. <br>
 > 시크릿을 Git이 아닌 Vault에서 중앙 관리하고, 일정 주기마다 자동 회전(rotation)하여 보안을 강화할 계획입니다.
+
+## 인프라 구성
+
+### 온프레미스 가상화 — Proxmox VE
+
+클라우드(AWS, GCP) 대신 물리 서버 위에 Proxmox VE 하이퍼바이저를 설치하고, 그 위에 가상 머신을 직접 구성했습니다.<br>
+Proxmox VE는 KVM 기반 가상화 플랫폼으로, 하나의 물리 서버에서 여러 VM을 생성·관리할 수 있습니다.<br>
+DB를 K8s 클러스터 밖 별도 VM으로 분리하여 워크로드 장애가 데이터에 영향을 주지 않도록 격리했습니다.
+
+| VMID | 이름 | 역할 | vCPU | RAM | Disk |
+|------|------|------|------|-----|------|
+| 2101 | control-plane | K8s Control Plane (API Server, etcd, Scheduler) | 2 | 4 GiB | 40 GiB |
+| 2201 | worker-01 | K8s Worker Node (Pod 스케줄링) | 2 | 6 GiB | 60 GiB |
+| 2202 | worker-02 | K8s Worker Node (Pod 스케줄링) | 2 | 6 GiB | 60 GiB |
+| 2203 | database | MySQL 8.0 전용 DB 서버 | 2 | 3 GiB | 40 GiB |
