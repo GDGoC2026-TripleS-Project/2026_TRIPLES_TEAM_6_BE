@@ -32,14 +32,7 @@ import static org.mockito.Mockito.*;
 
 /**
  * UserService 단위 테스트.
- *
- * <p>UserService는 "내 정보" 도메인을 담당하며, 모든 메서드에서
- * findActiveUser()를 통해 ACTIVE 상태 검증을 선행한다.</p>
- *
- * <p>핵심 검증 포인트:
- * - resolveLoginType(): LocalAuth 우선 → SocialAuth 차선 → 둘 다 없으면 예외
- * - validateNicknameAvailable(): 현재와 동일하면 스킵, 다르면 중복 체크
- * - deleteMe(): soft delete (상태 변경 + 이메일 제거 + SocialAuth 삭제)</p>
+ * 내 정보 조회, 닉네임 변경, 프로필 이미지, 회원 탈퇴 로직을 검증한다.
  */
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
@@ -73,9 +66,7 @@ class UserServiceTest {
         return user;
     }
 
-    // ═══════════════════════════════════════════════
     // 1. findMe — 내 정보 조회
-    // ═══════════════════════════════════════════════
     // resolveLoginType()으로 LOCAL/SOCIAL을 판별하고,
     // SOCIAL이면 resolveSocialProvider()로 제공자(GOOGLE/APPLE/KAKAO)를 조회한다.
 
@@ -164,9 +155,7 @@ class UserServiceTest {
         }
     }
 
-    // ═══════════════════════════════════════════════
     // 2. updateNickname — 닉네임 변경
-    // ═══════════════════════════════════════════════
 
     @Nested
     @DisplayName("닉네임 변경 (updateNickname)")
@@ -217,9 +206,7 @@ class UserServiceTest {
         }
     }
 
-    // ═══════════════════════════════════════════════
     // 3. updateProfileImage — 프로필 이미지 변경
-    // ═══════════════════════════════════════════════
 
     @Nested
     @DisplayName("프로필 이미지 변경 (updateProfileImage)")
@@ -259,9 +246,7 @@ class UserServiceTest {
         }
     }
 
-    // ═══════════════════════════════════════════════
     // 4. deleteMe — 회원 탈퇴
-    // ═══════════════════════════════════════════════
     // soft delete 방식: User 레코드는 유지하되 status를 DELETED로 변경하고,
     // 개인정보(이메일)를 제거하며, SocialAuth 연결을 끊는다.
 

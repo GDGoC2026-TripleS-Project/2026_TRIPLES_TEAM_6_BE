@@ -33,18 +33,7 @@ import static org.mockito.Mockito.*;
 
 /**
  * PasswordResetService 단위 테스트.
- *
- * <p>비밀번호 재설정은 3단계 상태 전이로 구성된다:</p>
- * <ol>
- *   <li>requestReset — 인증 코드 생성 + 이메일 발송</li>
- *   <li>verifyResetCode — 코드 검증만 (상태 변경 없음)</li>
- *   <li>confirmReset — 비밀번호 실제 변경 + 토큰 사용 처리</li>
- * </ol>
- *
- * <p>핵심 검증 포인트:
- * - loginId와 email이 동일 유저에 속하는지 교차 검증
- * - 토큰 만료/사용 여부 검증
- * - 대소문자 무관 코드 조회 (toUpperCase)</p>
+ * 요청 → 검증 → 확정 3단계 비밀번호 재설정 로직을 검증한다.
  */
 @ExtendWith(MockitoExtension.class)
 class PasswordResetServiceTest {
@@ -97,9 +86,7 @@ class PasswordResetServiceTest {
         return token;
     }
 
-    // ═══════════════════════════════════════════════
     // 1. requestReset — 비밀번호 재설정 요청 (Step 1)
-    // ═══════════════════════════════════════════════
 
     @Nested
     @DisplayName("비밀번호 재설정 요청 (requestReset)")
@@ -194,9 +181,7 @@ class PasswordResetServiceTest {
         }
     }
 
-    // ═══════════════════════════════════════════════
     // 2. verifyResetCode — 인증 코드 검증 (Step 2)
-    // ═══════════════════════════════════════════════
     // 이 단계는 코드가 유효한지만 확인하고, 상태를 변경하지 않는다.
     // 클라이언트가 "코드 입력 → 검증 → 새 비밀번호 입력" UI 플로우를 위해 필요.
 
@@ -312,9 +297,7 @@ class PasswordResetServiceTest {
         }
     }
 
-    // ═══════════════════════════════════════════════
     // 3. confirmReset — 비밀번호 확정 변경 (Step 3)
-    // ═══════════════════════════════════════════════
 
     @Nested
     @DisplayName("비밀번호 확정 변경 (confirmReset)")

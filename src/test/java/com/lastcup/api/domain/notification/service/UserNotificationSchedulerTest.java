@@ -29,20 +29,7 @@ import static org.mockito.Mockito.*;
 
 /**
  * UserNotificationScheduler 단위 테스트.
- *
- * <p>스케줄러는 매분 실행되며 두 종류의 알림을 처리한다:</p>
- * <ul>
- *   <li>RECORD_REMIND — "기록 알림": 사용자가 설정한 시각에 기록 독려</li>
- *   <li>DAILY_CLOSE — "마감 알림": 하루 섭취 기록 마감 독려</li>
- * </ul>
- *
- * <p>핵심 설계 원칙:
- * <ol>
- *   <li>중복 발송 방지 — dispatch log로 오늘 이미 보낸 유저 스킵</li>
- *   <li>장애 격리 — 한 유저의 FCM 실패가 다른 유저에 영향 주지 않음</li>
- *   <li>토큰 정합성 — null/blank 토큰 필터링, 중복 토큰 제거</li>
- *   <li>멱등성 — dispatch log 중복 저장 시 DataIntegrityViolationException 무시</li>
- * </ol>
+ * 기록 알림/마감 알림 발송, 중복 방지, 장애 격리 로직을 검증한다.
  */
 @ExtendWith(MockitoExtension.class)
 class UserNotificationSchedulerTest {
@@ -85,9 +72,7 @@ class UserNotificationSchedulerTest {
                 .thenReturn(Collections.emptyList());
     }
 
-    // ═══════════════════════════════════════════════
     // 1. sendScheduledNotifications — 스케줄러 진입점
-    // ═══════════════════════════════════════════════
 
     @Nested
     @DisplayName("스케줄러 진입점 (sendScheduledNotifications)")
@@ -111,9 +96,7 @@ class UserNotificationSchedulerTest {
         }
     }
 
-    // ═══════════════════════════════════════════════
     // 2. processSettings — 핵심 알림 발송 로직
-    // ═══════════════════════════════════════════════
 
     @Nested
     @DisplayName("알림 발송 로직 (processSettings)")
@@ -264,9 +247,7 @@ class UserNotificationSchedulerTest {
         }
     }
 
-    // ═══════════════════════════════════════════════
     // 3. groupEnabledTokensByUserId — 토큰 그룹핑
-    // ═══════════════════════════════════════════════
     // HashMap<userId, Set<token>> → HashMap<userId, List<token>>으로 변환하며,
     // Set을 사용하므로 자연스럽게 중복이 제거된다.
 
@@ -357,9 +338,7 @@ class UserNotificationSchedulerTest {
         }
     }
 
-    // ═══════════════════════════════════════════════
     // 4. 마감 알림 (DAILY_CLOSE) 경로 검증
-    // ═══════════════════════════════════════════════
 
     @Nested
     @DisplayName("마감 알림 (dailyClose)")
