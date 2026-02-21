@@ -20,7 +20,7 @@ spec:
       successCondition: result == "UP"
 
     # 2. 승격 후 API 스택이 정상 동작하는가?
-    - name: active-api-docsㅇ
+    - name: active-api-docs
       interval: 10s
       count: 6
       failureLimit: 2
