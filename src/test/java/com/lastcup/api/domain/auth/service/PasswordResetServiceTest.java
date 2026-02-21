@@ -10,6 +10,8 @@ import com.lastcup.api.domain.user.domain.LocalAuth;
 import com.lastcup.api.domain.user.domain.User;
 import com.lastcup.api.domain.user.repository.LocalAuthRepository;
 import com.lastcup.api.domain.user.repository.UserRepository;
+import static com.lastcup.api.global.config.AppTimeZone.KST;
+
 import jakarta.mail.internet.MimeMessage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -77,11 +79,11 @@ class PasswordResetServiceTest {
      */
     private PasswordResetToken createToken(Long userId, String code, boolean expired, boolean used) {
         LocalDateTime expiresAt = expired
-                ? LocalDateTime.now().minusMinutes(1)  // 1분 전에 만료
-                : LocalDateTime.now().plusMinutes(30);  // 30분 후 만료
+                ? LocalDateTime.now(KST).minusMinutes(1)  // 1분 전에 만료
+                : LocalDateTime.now(KST).plusMinutes(30);  // 30분 후 만료
         PasswordResetToken token = PasswordResetToken.create(userId, code, expiresAt);
         if (used) {
-            token.use(LocalDateTime.now());
+            token.use(LocalDateTime.now(KST));
         }
         return token;
     }
