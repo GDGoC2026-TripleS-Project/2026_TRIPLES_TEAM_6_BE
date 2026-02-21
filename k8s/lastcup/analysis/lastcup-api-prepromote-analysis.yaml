@@ -28,4 +28,5 @@ spec:
           # 클러스터 내부에서 접근하므로 서비스 이름과 네임스페이스로 URL 작성
           url: "http://lastcup-api-preview.lastcup.svc.cluster.local/api-docs"
           timeoutSeconds: 5
-      successCondition: result.statusCode == 200 # 10초 간격 / 6번 시도 / 2번까지 실패 허용 / 200 응답시 성공
+          jsonPath: "{$.openapi}" # OpenAPI 스펙의 버전 필드를 추출하여 result에 저장
+      successCondition: "result == '3.0.1'" # /api-docs가 정상적인 OpenAPI JSON을 반환하는지 확인
