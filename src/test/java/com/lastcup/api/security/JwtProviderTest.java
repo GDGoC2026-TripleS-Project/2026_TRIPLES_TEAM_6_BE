@@ -12,6 +12,7 @@ import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 
+import static com.lastcup.api.global.config.AppTimeZone.KST;
 import static org.junit.jupiter.api.Assertions.*;
 
 class JwtProviderTest {
@@ -68,7 +69,7 @@ class JwtProviderTest {
         String accessToken = jwtProvider.createAccessToken(10L);
         String refreshToken = jwtProvider.createRefreshToken(10L);
 
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now(KST);
         LocalDateTime accessExpiresAt = jwtProvider.getAccessTokenExpiresAt(accessToken);
         LocalDateTime refreshExpiresAt = jwtProvider.getRefreshTokenExpiresAt(refreshToken);
 
