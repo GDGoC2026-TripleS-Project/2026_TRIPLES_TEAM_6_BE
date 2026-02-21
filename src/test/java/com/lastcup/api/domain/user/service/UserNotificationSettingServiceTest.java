@@ -21,16 +21,7 @@ import static org.mockito.Mockito.*;
 
 /**
  * UserNotificationSettingService 단위 테스트.
- *
- * <p>알림 설정 관리 서비스. 핵심 로직:
- * - findOrCreate(): 기존 설정이 있으면 반환, 없으면 기본값(14:00, 21:00) 생성 후 반환
- * - update(): 기존 설정이 있으면 수정, 없으면 생성 후 수정. null 필드는 기존값 유지 (부분 업데이트)
- * - ensureDefaultExists(): 회원가입 시 호출. 이미 존재하면 무시 (멱등성)</p>
- *
- * <p>기획 회의 정의 기본값:
- * - isEnabled: true
- * - recordRemindAt: 14:00
- * - dailyCloseAt: 21:00</p>
+ * 알림 설정 조회/수정, 기본값 생성, 부분 업데이트 로직을 검증한다.
  */
 @ExtendWith(MockitoExtension.class)
 class UserNotificationSettingServiceTest {
@@ -59,9 +50,7 @@ class UserNotificationSettingServiceTest {
         return createSetting(userId, true, DEFAULT_RECORD_REMIND_AT, DEFAULT_DAILY_CLOSE_AT);
     }
 
-    // ═══════════════════════════════════════════════
     // 1. findOrCreate — 알림 설정 조회 (없으면 생성)
-    // ═══════════════════════════════════════════════
     // repository.findById() → 있으면 반환 / 없으면 createDefault() → save → 반환
 
     @Nested
@@ -107,9 +96,7 @@ class UserNotificationSettingServiceTest {
         }
     }
 
-    // ═══════════════════════════════════════════════
     // 2. update — 알림 설정 수정
-    // ═══════════════════════════════════════════════
     // update()는 null 파라미터를 무시하는 "부분 업데이트" 패턴을 사용한다.
     // 즉, isEnabled만 보내면 시간 설정은 기존값 유지.
 
@@ -174,9 +161,7 @@ class UserNotificationSettingServiceTest {
         }
     }
 
-    // ═══════════════════════════════════════════════
     // 3. ensureDefaultExists — 기본 설정 보장 (회원가입 시 호출)
-    // ═══════════════════════════════════════════════
     // 멱등성 보장: 이미 존재하면 아무것도 안 함 (existsById로 체크)
 
     @Nested

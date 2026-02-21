@@ -24,15 +24,7 @@ import static org.mockito.Mockito.*;
 
 /**
  * UserDeviceService 단위 테스트.
- *
- * <p>UserDeviceService는 FCM 디바이스 토큰 등록/갱신을 담당한다.
- * createOrUpdateDevice()가 유일한 public 메서드이며, 핵심 로직:
- * - fcmToken 유효성 검증 (null/blank 불가)
- * - User 존재 확인
- * - 기존 토큰이 있으면 업데이트, 없으면 신규 생성</p>
- *
- * <p>주의: LocalDateTime.now(KST)를 내부에서 호출하므로,
- * lastSeenAt의 정확한 시각 검증은 불가 → null이 아닌지만 확인한다.</p>
+ * FCM 디바이스 토큰 등록/갱신, 토큰 유효성 검증 로직을 확인한다.
  */
 @ExtendWith(MockitoExtension.class)
 class UserDeviceServiceTest {
@@ -57,9 +49,7 @@ class UserDeviceServiceTest {
         when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
     }
 
-    // ═══════════════════════════════════════════════
     // 1. createOrUpdateDevice — 디바이스 등록/갱신
-    // ═══════════════════════════════════════════════
     // 흐름: validateToken → findUser → findOrCreateByToken → updatePlatform → updateLastSeenAt → save
 
     @Nested

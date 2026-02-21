@@ -31,14 +31,7 @@ import static org.mockito.Mockito.*;
 
 /**
  * SocialLoginService 단위 테스트.
- *
- * <p>소셜 로그인은 "신규 가입"과 "기존 유저 로그인" 두 갈래로 분기되며,
- * Apple은 최초 1회만 이메일을 제공하므로 이메일 우선순위/보충 로직이 핵심이다.</p>
- *
- * <p>@InjectMocks 대신 생성자 직접 호출하는 이유:
- * SocialLoginService는 {@code List<OAuthTokenVerifier>}를 주입받는데,
- * @InjectMocks는 List 타입의 Mock 주입을 올바르게 처리하지 못한다.
- * 따라서 @BeforeEach에서 verifier 목록을 직접 구성하여 생성자로 주입한다.</p>
+ * 신규 가입/기존 로그인 분기, Apple 이메일 처리 로직을 검증한다.
  */
 @ExtendWith(MockitoExtension.class)
 class SocialLoginServiceTest {
@@ -92,9 +85,7 @@ class SocialLoginServiceTest {
                 .thenReturn(new AuthTokensResponse("access-token", "refresh-token"));
     }
 
-    // ═══════════════════════════════════════════════
     // 1. 신규 유저 회원가입 (signupNewUser)
-    // ═══════════════════════════════════════════════
 
     @Nested
     @DisplayName("신규 유저 회원가입")
@@ -201,9 +192,7 @@ class SocialLoginServiceTest {
         }
     }
 
-    // ═══════════════════════════════════════════════
     // 2. 기존 유저 로그인 (loginExistingUser)
-    // ═══════════════════════════════════════════════
 
     @Nested
     @DisplayName("기존 유저 로그인")
@@ -280,9 +269,7 @@ class SocialLoginServiceTest {
         }
     }
 
-    // ═══════════════════════════════════════════════
     // 3. Apple 이메일 우선순위 및 보충 로직
-    // ═══════════════════════════════════════════════
     // Apple은 최초 인가 1회에만 이메일을 제공하고, 이후에는 절대 재전달하지 않는다.
     // 이메일 결정 우선순위: (1) ID Token claim > (2) 클라이언트 request body
 
@@ -391,9 +378,7 @@ class SocialLoginServiceTest {
         }
     }
 
-    // ═══════════════════════════════════════════════
     // 4. Provider Verifier 조회
-    // ═══════════════════════════════════════════════
 
     @Nested
     @DisplayName("Provider Verifier 조회")

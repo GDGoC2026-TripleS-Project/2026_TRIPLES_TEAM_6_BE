@@ -21,14 +21,7 @@ import static org.mockito.Mockito.*;
 
 /**
  * BrandService 단위 테스트.
- *
- * <p>BrandService는 브랜드 목록 조회를 담당하며, 핵심 로직은:
- * - 키워드 유무에 따른 전체/검색 분기
- * - 로그인 유저의 즐겨찾기 여부 반영
- * - 즐겨찾기 우선 → ID 오름차순 정렬</p>
- *
- * <p>모든 메서드가 @Transactional(readOnly = true)이므로
- * 조회 전용 서비스임에 주의한다.</p>
+ * 키워드 검색 분기, 즐겨찾기 반영, 정렬 로직을 검증한다.
  */
 @ExtendWith(MockitoExtension.class)
 class BrandServiceTest {
@@ -51,9 +44,7 @@ class BrandServiceTest {
         return brand;
     }
 
-    // ═══════════════════════════════════════════════
     // 1. findBrands — 브랜드 목록 조회
-    // ═══════════════════════════════════════════════
     // keyword 유무 → 전체조회/검색 분기
     // userId 유무 → 즐겨찾기 반영/미반영 분기
     // 즐겨찾기가 있으면 즐겨찾기 우선 정렬

@@ -16,14 +16,7 @@ import static org.mockito.Mockito.*;
 
 /**
  * StorageService 단위 테스트.
- *
- * <p>StorageService는 S3Client를 래핑하여 프로필 이미지 업로드를 담당한다.
- * 핵심 로직:
- * - 파일 유효성 검증 (null/empty 체크, 이미지 타입 체크)
- * - 디렉토리 경로 생성: "users/{userId}/profile"
- * - S3Client.upload()에 위임</p>
- *
- * <p>S3Client는 @Mock으로 대체하여 실제 AWS 호출 없이 테스트한다.</p>
+ * 프로필 이미지 업로드 위임, 파일 유효성 검증 로직을 확인한다.
  */
 @ExtendWith(MockitoExtension.class)
 class StorageServiceTest {
@@ -33,9 +26,7 @@ class StorageServiceTest {
     @InjectMocks
     private StorageService storageService;
 
-    // ═══════════════════════════════════════════════
     // 1. uploadProfileImage — 프로필 이미지 업로드
-    // ═══════════════════════════════════════════════
     // 흐름: validateFile → 디렉토리 경로 생성 → s3Client.upload() 위임
 
     @Nested
