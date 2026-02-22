@@ -12,7 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Date;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
+import com.lastcup.api.global.config.AppTimeZone;
 
 @Component
 public class JwtProvider {
@@ -65,12 +65,12 @@ public class JwtProvider {
 
     public LocalDateTime getAccessTokenExpiresAt(String token) {
         Claims claims = parseClaims(token, "ACCESS");
-        return LocalDateTime.ofInstant(claims.getExpiration().toInstant(), ZoneId.systemDefault());
+        return LocalDateTime.ofInstant(claims.getExpiration().toInstant(), AppTimeZone.KST);
     }
 
     public LocalDateTime getRefreshTokenExpiresAt(String token) {
         Claims claims = parseClaims(token, "REFRESH");
-        return LocalDateTime.ofInstant(claims.getExpiration().toInstant(), ZoneId.systemDefault());
+        return LocalDateTime.ofInstant(claims.getExpiration().toInstant(), AppTimeZone.KST);
     }
 
     private String createToken(Long userId, long ttlMs, String type) {
